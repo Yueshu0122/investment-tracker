@@ -1,0 +1,2335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>投资资产记录</title>
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+:root {
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --text: #1d1d1f;
+    --subtext: #86868b;
+    --border: #e5e5e7;
+    --blue: #007aff;
+    --green: #34c759;
+    --red: #ff3b30;
+    --orange: #ff9500;
+    --shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+body {
+    margin: 0;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+button,
+input,
+select {
+    font: inherit;
+}
+button {
+    cursor: pointer;
+}
+.app {
+    max-width: 900px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+/* Header */
+.header {
+    padding: 22px 18px 12px;
+}
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+.header p {
+    margin: 6px 0 0;
+    color: var(--subtext);
+    font-size: 14px;
+}
+/* Tabs */
+.tabs {
+    display: flex;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+}
+.tab {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    padding: 14px 5px;
+    color: var(--subtext);
+    font-size: 15px;
+    font-weight: 600;
+}
+.tab.active {
+    color: var(--blue);
+    box-shadow: inset 0 -2px 0 var(--blue);
+}
+/* Content */
+.content {
+    padding: 14px;
+}
+.page {
+    display: none;
+}
+.page.active {
+    display: block;
+}
+/* Cards */
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    overflow: hidden;
+}
+.card-header {
+    padding: 16px 17px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.card-title {
+    font-size: 17px;
+    font-weight: 700;
+}
+.card-body {
+    padding: 14px 17px 17px;
+}
+/* Buttons */
+.primary-btn {
+    border: 0;
+    background: var(--blue);
+    color: white;
+    border-radius: 11px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.secondary-btn {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    border-radius: 10px;
+    padding: 9px 13px;
+    font-size: 14px;
+}
+.danger-btn {
+    border: 0;
+    background: #fff0ef;
+    color: var(--red);
+    border-radius: 9px;
+    padding: 7px 10px;
+    font-size: 13px;
+}
+.small-btn {
+    padding: 6px 9px;
+    font-size: 12px;
+}
+/* Asset list */
+.asset-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.asset-item {
+    padding: 15px 16px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: #fff;
+}
+.asset-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.asset-name {
+    font-size: 18px;
+    font-weight: 700;
+}
+.asset-meta {
+    margin-top: 4px;
+    color: var(--subtext);
+    font-size: 12px;
+}
+.asset-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+}
+.stat {
+    background: #f7f7f8;
+    border-radius: 9px;
+    padding: 9px;
+}
+.stat-label {
+    color: var(--subtext);
+    font-size: 11px;
+}
+.stat-value {
+    margin-top: 3px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.asset-actions {
+    margin-top: 13px;
+    display: flex;
+    gap: 8px;
+}
+/* Form */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 13px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.form-group.full {
+    grid-column: 1 / -1;
+}
+label {
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+}
+input,
+select {
+    width: 100%;
+    border: 1px solid #d9d9dd;
+    background: #fff;
+    border-radius: 10px;
+    padding: 11px 12px;
+    outline: none;
+    color: var(--text);
+}
+input:focus,
+select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(0,122,255,.1);
+}
+.form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+/* Transaction */
+.transaction-list {
+    display: flex;
+    flex-direction: column;
+}
+.transaction {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+.transaction:last-child {
+    border-bottom: 0;
+}
+.transaction-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.transaction-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.type-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+.type-buy {
+    background: #eaf8ee;
+    color: var(--green);
+}
+.type-sell {
+    background: #fff0ef;
+    color: var(--red);
+}
+.transaction-date {
+    font-size: 14px;
+    font-weight: 600;
+}
+.transaction-detail {
+    color: var(--subtext);
+    font-size: 12px;
+    margin-top: 3px;
+}
+.transaction-amount {
+    text-align: right;
+}
+.transaction-price {
+    font-size: 15px;
+    font-weight: 600;
+}
+.transaction-total {
+    color: var(--subtext);
+    font-size: 12px;
+    margin-top: 3px;
+}
+.transaction-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 9px;
+    justify-content: flex-end;
+}
+/* Summary */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.summary-item {
+    background: #f7f7f8;
+    border-radius: 11px;
+    padding: 13px;
+}
+.summary-label {
+    color: var(--subtext);
+    font-size: 12px;
+}
+.summary-value {
+    margin-top: 5px;
+    font-size: 18px;
+    font-weight: 700;
+}
+/* Chart */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    padding: 5px 0;
+}
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+.chart-empty {
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--subtext);
+    font-size: 14px;
+}
+/* Month selector */
+.month-selector {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 0 10px;
+}
+.month-selector::-webkit-scrollbar {
+    display: none;
+}
+.month-btn {
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    background: white;
+    color: #666;
+    padding: 7px 11px;
+    border-radius: 9px;
+    font-size: 12px;
+}
+.month-btn.active {
+    background: #eef6ff;
+    color: var(--blue);
+    border-color: #bcdcff;
+}
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.35);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+}
+.modal.show {
+    display: flex;
+}
+.modal-box {
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 20px;
+}
+.modal-title {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+.modal-close {
+    float: right;
+    border: 0;
+    background: #f2f2f3;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+}
+/* Empty */
+.empty {
+    text-align: center;
+    color: var(--subtext);
+    padding: 35px 15px;
+    font-size: 14px;
+}
+/* Settings */
+.setting-row {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child {
+    border-bottom: 0;
+}
+.setting-title {
+    font-weight: 600;
+    font-size: 15px;
+}
+.setting-description {
+    color: var(--subtext);
+    font-size: 12px;
+    margin-top: 4px;
+}
+.setting-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+/* Toast */
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(30,30,30,.92);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: .25s;
+    z-index: 200;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+/* Responsive */
+@media (max-width: 600px) {
+    .header h1 {
+        font-size: 25px;
+    }
+    .content {
+        padding: 10px;
+    }
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-group.full {
+        grid-column: auto;
+    }
+    .asset-stats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .chart-container {
+        height: 280px;
+    }
+}
+@media (min-width: 700px) {
+    .modal {
+        align-items: center;
+        padding: 20px;
+    }
+    .modal-box {
+        border-radius: 20px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="app">
+    <header class="header">
+        <h1>投资资产记录</h1>
+        <p>记录买入与卖出，自动计算持仓成本</p>
+    </header>
+    <nav class="tabs">
+        <button class="tab active" data-page="assetsPage">资产</button>
+        <button class="tab" data-page="chartPage">图表</button>
+        <button class="tab" data-page="settingsPage">数据</button>
+    </nav>
+    <main class="content">
+        <!-- ==================== 资产页面 ==================== -->
+        <section id="assetsPage" class="page active">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">我的资产</div>
+                    <button class="primary-btn" onclick="openAssetModal()">
+                        ＋ 新建资产
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="assetList" class="asset-list"></div>
+                </div>
+            </div>
+        </section>
+        <!-- ==================== 图表页面 ==================== -->
+        <section id="chartPage" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">平均成本走势</div>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>选择资产</label>
+                        <select id="chartAssetSelect"
+                                onchange="renderChartPage()">
+                        </select>
+                    </div>
+                    <div style="height:15px"></div>
+                    <div id="monthSelector"
+                         class="month-selector">
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                        <div id="chartEmpty"
+                             class="chart-empty"
+                             style="display:none">
+                            暂无足够的交易数据
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">成本说明</div>
+                </div>
+                <div class="card-body"
+                     style="font-size:13px;line-height:1.7;color:#666">
+                    <p>
+                        图表展示的是每个月月底的持仓平均成本。
+                    </p>
+                    <p>
+                        例如某资产 1 月买入 10 股，
+                        2 月又买入 10 股，
+                        图表会分别计算 1 月底和 2 月底的平均成本。
+                    </p>
+                    <p>
+                        卖出不会改变剩余持仓的单位平均成本。
+                        只有新的买入交易才会改变平均成本。
+                    </p>
+                </div>
+            </div>
+        </section>
+        <!-- ==================== 数据页面 ==================== -->
+        <section id="settingsPage" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">数据管理</div>
+                </div>
+                <div class="card-body">
+                    <div class="setting-row">
+                        <div class="setting-title">
+                            导出数据
+                        </div>
+                        <div class="setting-description">
+                            将所有资产、交易记录导出为 JSON 文件。
+                        </div>
+                        <div class="setting-actions">
+                            <button class="primary-btn"
+                                    onclick="exportData()">
+                                导出 JSON
+                            </button>
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-title">
+                            导入数据
+                        </div>
+                        <div class="setting-description">
+                            从之前导出的 JSON 文件恢复数据。
+                        </div>
+                        <div class="setting-actions">
+                            <button class="secondary-btn"
+                                    onclick="document.getElementById('importFile').click()">
+                                导入 JSON
+                            </button>
+                            <input
+                                id="importFile"
+                                type="file"
+                                accept=".json,application/json"
+                                style="display:none"
+                                onchange="importData(event)"
+                            >
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-title">
+                            当前数据
+                        </div>
+                        <div class="setting-description"
+                             id="dataInfo">
+                        </div>
+                    </div>
+                    <div class="setting-row">
+                        <div class="setting-title"
+                             style="color:var(--red)">
+                            删除全部数据
+                        </div>
+                        <div class="setting-description">
+                            此操作会删除所有资产和交易记录，无法恢复。
+                        </div>
+                        <div class="setting-actions">
+                            <button class="danger-btn"
+                                    onclick="clearAllData()">
+                                删除全部数据
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+<!-- ==================== 新建资产 Modal ==================== -->
+<div id="assetModal" class="modal">
+    <div class="modal-box">
+        <button class="modal-close"
+                onclick="closeAssetModal()">
+            ×
+        </button>
+        <div class="modal-title">
+            新建资产
+        </div>
+        <form id="assetForm">
+            <div class="form-group">
+                <label>资产名称</label>
+                <input
+                    id="assetName"
+                    type="text"
+                    placeholder="例如：VOO、QQQ、BTC"
+                    required
+                >
+            </div>
+            <div style="height:14px"></div>
+            <div class="form-group">
+                <label>备注</label>
+                <input
+                    id="assetNote"
+                    type="text"
+                    placeholder="可选"
+                >
+            </div>
+            <div class="form-actions">
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeAssetModal()">
+                    取消
+                </button>
+                <button
+                    type="submit"
+                    class="primary-btn">
+                    创建资产
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- ==================== 交易 Modal ==================== -->
+<div id="transactionModal" class="modal">
+    <div class="modal-box">
+        <button class="modal-close"
+                onclick="closeTransactionModal()">
+            ×
+        </button>
+        <div class="modal-title"
+             id="transactionModalTitle">
+            新增交易
+        </div>
+        <form id="transactionForm">
+            <input
+                type="hidden"
+                id="editingTransactionId"
+            >
+            <input
+                type="hidden"
+                id="transactionAssetId"
+            >
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>交易类型</label>
+                    <select id="transactionType">
+                        <option value="buy">
+                            买入
+                        </option>
+                        <option value="sell">
+                            卖出
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>日期</label>
+                    <input
+                        id="transactionDate"
+                        type="date"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label>价格</label>
+                    <input
+                        id="transactionPrice"
+                        type="number"
+                        step="any"
+                        min="0"
+                        placeholder="例如：620.50"
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label>数量</label>
+                    <input
+                        id="transactionQuantity"
+                        type="number"
+                        step="any"
+                        min="0"
+                        placeholder="例如：10"
+                        required
+                    >
+                </div>
+                <div class="form-group full">
+                    <label>备注</label>
+                    <input
+                        id="transactionNote"
+                        type="text"
+                        placeholder="可选，例如：月度定投"
+                    >
+                </div>
+            </div>
+            <div style="
+                margin-top:12px;
+                padding:11px;
+                border-radius:10px;
+                background:#f7f7f8;
+                font-size:13px;
+                color:#666;
+            ">
+                交易金额：
+                <strong id="transactionTotal">
+                    0
+                </strong>
+            </div>
+            <div class="form-actions">
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeTransactionModal()">
+                    取消
+                </button>
+                <button
+                    type="submit"
+                    class="primary-btn">
+                    保存
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- ==================== 资产详情 Modal ==================== -->
+<div id="assetDetailModal" class="modal">
+    <div class="modal-box">
+        <button class="modal-close"
+                onclick="closeAssetDetailModal()">
+            ×
+        </button>
+        <div id="assetDetailContent"></div>
+    </div>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+/* ============================================================
+   数据结构
+   ============================================================
+   {
+       assets: [
+           {
+               id: "...",
+               name: "VOO",
+               note: "",
+               createdAt: "...",
+               transactions: [
+                   {
+                       id: "...",
+                       type: "buy",
+                       date: "2026-09-21",
+                       price: 600,
+                       quantity: 2,
+                       note: ""
+                   }
+               ]
+           }
+       ]
+   }
+============================================================ */
+const STORAGE_KEY = "investment_asset_records_v1";
+let db = loadData();
+/* ============================================================
+   基础工具
+============================================================ */
+function generateId() {
+    return Date.now().toString(36) +
+           Math.random().toString(36).substring(2, 9);
+}
+function todayString() {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+function saveData() {
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(db)
+    );
+    updateDataInfo();
+}
+function loadData() {
+    try {
+        const raw =
+            localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+            return {
+                assets: []
+            };
+        }
+        const parsed = JSON.parse(raw);
+        if (!parsed.assets ||
+            !Array.isArray(parsed.assets)) {
+            return {
+                assets: []
+            };
+        }
+        return parsed;
+    } catch (error) {
+        console.error(error);
+        return {
+            assets: []
+        };
+    }
+}
+function formatNumber(value, digits = 2) {
+    if (!Number.isFinite(Number(value))) {
+        return "0";
+    }
+    return Number(value).toLocaleString(
+        "zh-CN",
+        {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: digits
+        }
+    );
+}
+function formatMoney(value) {
+    return formatNumber(value, 2);
+}
+function showToast(message) {
+    const toast =
+        document.getElementById("toast");
+    toast.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 1800);
+}
+/* ============================================================
+   资产计算
+============================================================ */
+/*
+    移动平均成本法：
+    买入：
+    新平均成本 =
+    (旧持仓数量 × 旧平均成本 + 买入数量 × 买入价格)
+    ÷ 新持仓数量
+    卖出：
+    平均成本不变。
+    同时为了支持历史图表，
+    会按照日期从早到晚重新计算。
+*/
+function calculateAsset(asset) {
+    const transactions =
+        [...asset.transactions]
+        .sort((a, b) => {
+            if (a.date !== b.date) {
+                return a.date.localeCompare(b.date);
+            }
+            return a.id.localeCompare(b.id);
+        });
+    let quantity = 0;
+    let cost = 0;
+    let totalBuyAmount = 0;
+    let totalSellAmount = 0;
+    for (const tx of transactions) {
+        const price =
+            Number(tx.price);
+        const qty =
+            Number(tx.quantity);
+        if (
+            !Number.isFinite(price) ||
+            !Number.isFinite(qty) ||
+            qty <= 0
+        ) {
+            continue;
+        }
+        if (tx.type === "buy") {
+            cost += price * qty;
+            quantity += qty;
+            totalBuyAmount += price * qty;
+        } else if (tx.type === "sell") {
+            /*
+                卖出使用当前平均成本
+                从总成本中扣除对应成本。
+            */
+            if (quantity > 0) {
+                const avgCost =
+                    cost / quantity;
+                const sellQty =
+                    Math.min(qty, quantity);
+                cost -=
+                    avgCost * sellQty;
+                quantity -= sellQty;
+                totalSellAmount +=
+                    price * sellQty;
+            }
+        }
+    }
+    const averageCost =
+        quantity > 0
+            ? cost / quantity
+            : 0;
+    return {
+        quantity,
+        cost,
+        averageCost,
+        totalBuyAmount,
+        totalSellAmount
+    };
+}
+/* ============================================================
+   获取历史平均成本
+============================================================ */
+function calculateHistoricalCost(asset) {
+    const transactions =
+        [...asset.transactions]
+        .sort((a, b) => {
+            if (a.date !== b.date) {
+                return a.date.localeCompare(b.date);
+            }
+            return a.id.localeCompare(b.id);
+        });
+    let quantity = 0;
+    let cost = 0;
+    const daily = {};
+    for (const tx of transactions) {
+        const price =
+            Number(tx.price);
+        const qty =
+            Number(tx.quantity);
+        if (
+            !Number.isFinite(price) ||
+            !Number.isFinite(qty) ||
+            qty <= 0
+        ) {
+            continue;
+        }
+        if (tx.type === "buy") {
+            cost += price * qty;
+            quantity += qty;
+        }
+        else if (tx.type === "sell") {
+            if (quantity > 0) {
+                const avg =
+                    cost / quantity;
+                const sellQty =
+                    Math.min(qty, quantity);
+                cost -=
+                    avg * sellQty;
+                quantity -= sellQty;
+            }
+        }
+        daily[tx.date] =
+            quantity > 0
+                ? cost / quantity
+                : 0;
+    }
+    return daily;
+}
+/*
+    将每日数据转换成每个月月底数据。
+    例如：
+    2026-01-03
+    2026-01-15
+    2026-02-05
+    2026-02-20
+    最终：
+    2026-01 -> 1月最后一次交易后的成本
+    2026-02 -> 2月最后一次交易后的成本
+    如果某个月没有交易，
+    则使用上个月月底的成本。
+*/
+function calculateMonthlyCost(asset) {
+    const transactions =
+        [...asset.transactions]
+        .sort((a, b) => {
+            if (a.date !== b.date) {
+                return a.date.localeCompare(b.date);
+            }
+            return a.id.localeCompare(b.id);
+        });
+    if (transactions.length === 0) {
+        return [];
+    }
+    let quantity = 0;
+    let cost = 0;
+    const monthData = {};
+    let currentMonth = null;
+    for (const tx of transactions) {
+        const price =
+            Number(tx.price);
+        const qty =
+            Number(tx.quantity);
+        if (
+            !Number.isFinite(price) ||
+            !Number.isFinite(qty) ||
+            qty <= 0
+        ) {
+            continue;
+        }
+        if (tx.type === "buy") {
+            cost += price * qty;
+            quantity += qty;
+        }
+        else if (tx.type === "sell") {
+            if (quantity > 0) {
+                const avg =
+                    cost / quantity;
+                const sellQty =
+                    Math.min(qty, quantity);
+                cost -=
+                    avg * sellQty;
+                quantity -= sellQty;
+            }
+        }
+        const month =
+            tx.date.substring(0, 7);
+        const avgCost =
+            quantity > 0
+                ? cost / quantity
+                : 0;
+        monthData[month] = {
+            month,
+            averageCost: avgCost
+        };
+    }
+    return Object.values(monthData)
+        .sort((a, b) =>
+            a.month.localeCompare(b.month)
+        );
+}
+/* ============================================================
+   资产页面
+============================================================ */
+function renderAssets() {
+    const container =
+        document.getElementById("assetList");
+    if (db.assets.length === 0) {
+        container.innerHTML = `
+            <div class="empty">
+                还没有资产<br>
+                点击右上角「新建资产」开始记录
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML =
+        db.assets.map(asset => {
+            const stat =
+                calculateAsset(asset);
+            return `
+                <div class="asset-item">
+                    <div class="asset-top">
+                        <div>
+                            <div class="asset-name">
+                                ${escapeHtml(asset.name)}
+                            </div>
+                            <div class="asset-meta">
+                                ${asset.note
+                                    ? escapeHtml(asset.note)
+                                    : "暂无备注"}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="asset-stats">
+                        <div class="stat">
+                            <div class="stat-label">
+                                当前持仓
+                            </div>
+                            <div class="stat-value">
+                                ${formatNumber(stat.quantity)}
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">
+                                平均成本
+                            </div>
+                            <div class="stat-value">
+                                ${formatMoney(stat.averageCost)}
+                            </div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">
+                                交易次数
+                            </div>
+                            <div class="stat-value">
+                                ${asset.transactions.length}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="asset-actions">
+                        <button
+                            class="primary-btn small-btn"
+                            onclick="openTransactionModal('${asset.id}')">
+                            ＋ 交易
+                        </button>
+                        <button
+                            class="secondary-btn small-btn"
+                            onclick="openAssetDetail('${asset.id}')">
+                            查看记录
+                        </button>
+                        <button
+                            class="secondary-btn small-btn"
+                            onclick="deleteAsset('${asset.id}')">
+                            删除
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+}
+/* ============================================================
+   新建资产
+============================================================ */
+function openAssetModal() {
+    document.getElementById("assetName").value = "";
+    document.getElementById("assetNote").value = "";
+    document
+        .getElementById("assetModal")
+        .classList.add("show");
+    setTimeout(() => {
+        document
+            .getElementById("assetName")
+            .focus();
+    }, 100);
+}
+function closeAssetModal() {
+    document
+        .getElementById("assetModal")
+        .classList.remove("show");
+}
+document
+    .getElementById("assetForm")
+    .addEventListener("submit", function(e) {
+        e.preventDefault();
+        const name =
+            document
+                .getElementById("assetName")
+                .value
+                .trim();
+        const note =
+            document
+                .getElementById("assetNote")
+                .value
+                .trim();
+        if (!name) {
+            showToast("请输入资产名称");
+            return;
+        }
+        const exists =
+            db.assets.some(
+                asset =>
+                    asset.name.toLowerCase() ===
+                    name.toLowerCase()
+            );
+        if (exists) {
+            showToast("该资产已经存在");
+            return;
+        }
+        db.assets.push({
+            id: generateId(),
+            name,
+            note,
+            createdAt: new Date().toISOString(),
+            transactions: []
+        });
+        saveData();
+        renderAssets();
+        renderChartPage();
+        closeAssetModal();
+        showToast("资产创建成功");
+    });
+/* ============================================================
+   删除资产
+============================================================ */
+function deleteAsset(assetId) {
+    const asset =
+        db.assets.find(
+            x => x.id === assetId
+        );
+    if (!asset) return;
+    const confirmed =
+        confirm(
+            `确定删除「${asset.name}」吗？\n\n该资产的所有交易记录都会被删除。`
+        );
+    if (!confirmed) return;
+    db.assets =
+        db.assets.filter(
+            x => x.id !== assetId
+        );
+    saveData();
+    renderAssets();
+    renderChartPage();
+    showToast("资产已删除");
+}
+/* ============================================================
+   新增 / 编辑交易
+============================================================ */
+function openTransactionModal(
+    assetId,
+    transactionId = null
+) {
+    const asset =
+        db.assets.find(
+            x => x.id === assetId
+        );
+    if (!asset) return;
+    document
+        .getElementById("transactionAssetId")
+        .value = assetId;
+    document
+        .getElementById("editingTransactionId")
+        .value =
+            transactionId || "";
+    const title =
+        document.getElementById(
+            "transactionModalTitle"
+        );
+    if (transactionId) {
+        const tx =
+            asset.transactions.find(
+                x => x.id === transactionId
+            );
+        if (!tx) return;
+        title.textContent =
+            `编辑交易 · ${asset.name}`;
+        document
+            .getElementById("transactionType")
+            .value = tx.type;
+        document
+            .getElementById("transactionDate")
+            .value = tx.date;
+        document
+            .getElementById("transactionPrice")
+            .value = tx.price;
+        document
+            .getElementById("transactionQuantity")
+            .value = tx.quantity;
+        document
+            .getElementById("transactionNote")
+            .value = tx.note || "";
+    }
+    else {
+        title.textContent =
+            `新增交易 · ${asset.name}`;
+        document
+            .getElementById("transactionType")
+            .value = "buy";
+        document
+            .getElementById("transactionDate")
+            .value = todayString();
+        document
+            .getElementById("transactionPrice")
+            .value = "";
+        document
+            .getElementById("transactionQuantity")
+            .value = "";
+        document
+            .getElementById("transactionNote")
+            .value = "";
+    }
+    updateTransactionTotal();
+    document
+        .getElementById("transactionModal")
+        .classList.add("show");
+}
+function closeTransactionModal() {
+    document
+        .getElementById("transactionModal")
+        .classList.remove("show");
+}
+function updateTransactionTotal() {
+    const price =
+        Number(
+            document
+                .getElementById("transactionPrice")
+                .value
+        );
+    const quantity =
+        Number(
+            document
+                .getElementById("transactionQuantity")
+                .value
+        );
+    const total =
+        Number.isFinite(price) &&
+        Number.isFinite(quantity)
+            ? price * quantity
+            : 0;
+    document
+        .getElementById("transactionTotal")
+        .textContent =
+            formatMoney(total);
+}
+document
+    .getElementById("transactionPrice")
+    .addEventListener(
+        "input",
+        updateTransactionTotal
+    );
+document
+    .getElementById("transactionQuantity")
+    .addEventListener(
+        "input",
+        updateTransactionTotal
+    );
+document
+    .getElementById("transactionForm")
+    .addEventListener("submit", function(e) {
+        e.preventDefault();
+        const assetId =
+            document
+                .getElementById("transactionAssetId")
+                .value;
+        const asset =
+            db.assets.find(
+                x => x.id === assetId
+            );
+        if (!asset) return;
+        const type =
+            document
+                .getElementById("transactionType")
+                .value;
+        const date =
+            document
+                .getElementById("transactionDate")
+                .value;
+        const price =
+            Number(
+                document
+                    .getElementById("transactionPrice")
+                    .value
+            );
+        const quantity =
+            Number(
+                document
+                    .getElementById("transactionQuantity")
+                    .value
+            );
+        const note =
+            document
+                .getElementById("transactionNote")
+                .value
+                .trim();
+        if (!date) {
+            showToast("请选择日期");
+            return;
+        }
+        if (
+            !Number.isFinite(price) ||
+            price <= 0
+        ) {
+            showToast("请输入有效价格");
+            return;
+        }
+        if (
+            !Number.isFinite(quantity) ||
+            quantity <= 0
+        ) {
+            showToast("请输入有效数量");
+            return;
+        }
+        const editingId =
+            document
+                .getElementById("editingTransactionId")
+                .value;
+        /*
+            如果是卖出，
+            不能卖出超过当前历史持仓。
+            注意编辑交易时需要先把原交易移除，
+            然后重新计算。
+        */
+        const tempTransactions =
+            asset.transactions.filter(
+                tx => tx.id !== editingId
+            );
+        if (type === "sell") {
+            const tempAsset = {
+                ...asset,
+                transactions:
+                    tempTransactions
+            };
+            const current =
+                calculateAsset(tempAsset);
+            if (quantity > current.quantity + 1e-10) {
+                showToast(
+                    `卖出数量不能超过当前持仓 ${formatNumber(current.quantity)}`
+                );
+                return;
+            }
+        }
+        const transaction = {
+            id:
+                editingId ||
+                generateId(),
+            type,
+            date,
+            price,
+            quantity,
+            note
+        };
+        if (editingId) {
+            const index =
+                asset.transactions.findIndex(
+                    tx => tx.id === editingId
+                );
+            if (index >= 0) {
+                asset.transactions[index] =
+                    transaction;
+            }
+        }
+        else {
+            asset.transactions.push(
+                transaction
+            );
+        }
+        saveData();
+        renderAssets();
+        renderChartPage();
+        closeTransactionModal();
+        showToast(
+            editingId
+                ? "交易已修改"
+                : "交易已添加"
+        );
+    });
+/* ============================================================
+   资产详情
+============================================================ */
+function openAssetDetail(assetId) {
+    const asset =
+        db.assets.find(
+            x => x.id === assetId
+        );
+    if (!asset) return;
+    renderAssetDetail(asset);
+    document
+        .getElementById("assetDetailModal")
+        .classList.add("show");
+}
+function closeAssetDetailModal() {
+    document
+        .getElementById("assetDetailModal")
+        .classList.remove("show");
+}
+function renderAssetDetail(asset) {
+    const container =
+        document.getElementById(
+            "assetDetailContent"
+        );
+    const stat =
+        calculateAsset(asset);
+    const transactions =
+        [...asset.transactions]
+        .sort((a, b) => {
+            if (a.date !== b.date) {
+                return b.date.localeCompare(
+                    a.date
+                );
+            }
+            return b.id.localeCompare(
+                a.id
+            );
+        });
+    container.innerHTML = `
+        <div class="modal-title">
+            ${escapeHtml(asset.name)}
+        </div>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-label">
+                    当前持仓
+                </div>
+                <div class="summary-value">
+                    ${formatNumber(stat.quantity)}
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">
+                    平均成本
+                </div>
+                <div class="summary-value">
+                    ${formatMoney(stat.averageCost)}
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">
+                    累计买入
+                </div>
+                <div class="summary-value">
+                    ${formatMoney(stat.totalBuyAmount)}
+                </div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-label">
+                    累计卖出
+                </div>
+                <div class="summary-value">
+                    ${formatMoney(stat.totalSellAmount)}
+                </div>
+            </div>
+        </div>
+        <div style="height:20px"></div>
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            margin-bottom:5px;
+        ">
+            <div class="card-title">
+                交易记录
+            </div>
+            <button
+                class="primary-btn small-btn"
+                onclick="closeAssetDetailModal();openTransactionModal('${asset.id}')">
+                ＋ 交易
+            </button>
+        </div>
+        <div class="transaction-list">
+            ${
+                transactions.length === 0
+                ? `
+                    <div class="empty">
+                        暂无交易记录
+                    </div>
+                  `
+                : transactions.map(tx => `
+                    <div class="transaction">
+                        <div class="transaction-main">
+                            <div class="transaction-left">
+                                <div class="
+                                    type-badge
+                                    ${tx.type === "buy"
+                                        ? "type-buy"
+                                        : "type-sell"}
+                                ">
+                                    ${tx.type === "buy"
+                                        ? "买"
+                                        : "卖"}
+                                </div>
+                                <div>
+                                    <div class="transaction-date">
+                                        ${tx.date}
+                                    </div>
+                                    <div class="transaction-detail">
+                                        ${formatNumber(tx.quantity)}
+                                        ×
+                                        ${formatMoney(tx.price)}
+                                        ${
+                                            tx.note
+                                            ? " · " +
+                                              escapeHtml(tx.note)
+                                            : ""
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="transaction-amount">
+                                <div class="transaction-price">
+                                    ${formatMoney(
+                                        tx.price
+                                    )}
+                                </div>
+                                <div class="transaction-total">
+                                    ${formatMoney(
+                                        tx.price *
+                                        tx.quantity
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="transaction-actions">
+                            <button
+                                class="secondary-btn small-btn"
+                                onclick="
+                                    closeAssetDetailModal();
+                                    openTransactionModal(
+                                        '${asset.id}',
+                                        '${tx.id}'
+                                    );
+                                ">
+                                编辑
+                            </button>
+                            <button
+                                class="danger-btn small-btn"
+                                onclick="
+                                    deleteTransaction(
+                                        '${asset.id}',
+                                        '${tx.id}'
+                                    );
+                                ">
+                                删除
+                            </button>
+                        </div>
+                    </div>
+                `).join("")
+            }
+        </div>
+    `;
+}
+/* ============================================================
+   删除交易
+============================================================ */
+function deleteTransaction(
+    assetId,
+    transactionId
+) {
+    const asset =
+        db.assets.find(
+            x => x.id === assetId
+        );
+    if (!asset) return;
+    const tx =
+        asset.transactions.find(
+            x => x.id === transactionId
+        );
+    if (!tx) return;
+    const confirmed =
+        confirm(
+            `确定删除 ${tx.date} 的这笔${tx.type === "buy" ? "买入" : "卖出"}记录吗？`
+        );
+    if (!confirmed) return;
+    asset.transactions =
+        asset.transactions.filter(
+            x => x.id !== transactionId
+        );
+    saveData();
+    renderAssets();
+    renderChartPage();
+    renderAssetDetail(asset);
+    showToast("交易记录已删除");
+}
+/* ============================================================
+   图表页面
+============================================================ */
+function renderChartPage() {
+    const select =
+        document.getElementById(
+            "chartAssetSelect"
+        );
+    const current =
+        select.value;
+    select.innerHTML =
+        db.assets.map(asset => `
+            <option value="${asset.id}">
+                ${escapeHtml(asset.name)}
+            </option>
+        `).join("");
+    if (
+        current &&
+        db.assets.some(
+            x => x.id === current
+        )
+    ) {
+        select.value = current;
+    }
+    if (
+        !select.value &&
+        db.assets.length > 0
+    ) {
+        select.value =
+            db.assets[0].id;
+    }
+    renderCostChart();
+}
+function renderCostChart() {
+    const select =
+        document.getElementById(
+            "chartAssetSelect"
+        );
+    const asset =
+        db.assets.find(
+            x => x.id === select.value
+        );
+    const canvas =
+        document.getElementById(
+            "costChart"
+        );
+    const empty =
+        document.getElementById(
+            "chartEmpty"
+        );
+    if (!asset) {
+        canvas.style.display = "none";
+        empty.style.display = "flex";
+        return;
+    }
+    const data =
+        calculateMonthlyCost(asset);
+    if (data.length === 0) {
+        canvas.style.display = "none";
+        empty.style.display = "flex";
+        return;
+    }
+    canvas.style.display = "block";
+    empty.style.display = "none";
+    drawChart(canvas, data);
+    renderMonthSelector(data);
+}
+function renderMonthSelector(data) {
+    const container =
+        document.getElementById(
+            "monthSelector"
+        );
+    if (!data.length) {
+        container.innerHTML = "";
+        return;
+    }
+    container.innerHTML =
+        data.map(item => `
+            <button
+                class="month-btn"
+                onclick="showMonthPoint('${item.month}')">
+                ${formatMonth(item.month)}
+            </button>
+        `).join("");
+}
+function formatMonth(month) {
+    const parts =
+        month.split("-");
+    return `${parts[0]}年${Number(parts[1])}月`;
+}
+function showMonthPoint(month) {
+    const select =
+        document.getElementById(
+            "chartAssetSelect"
+        );
+    const asset =
+        db.assets.find(
+            x => x.id === select.value
+        );
+    if (!asset) return;
+    const data =
+        calculateMonthlyCost(asset);
+    const point =
+        data.find(
+            x => x.month === month
+        );
+    if (!point) return;
+    showToast(
+        `${formatMonth(month)} 平均成本：${formatMoney(point.averageCost)}`
+    );
+}
+/* ============================================================
+   Canvas 折线图
+============================================================ */
+function drawChart(canvas, data) {
+    const rect =
+        canvas.getBoundingClientRect();
+    const dpr =
+        window.devicePixelRatio || 1;
+    const width =
+        rect.width;
+    const height =
+        rect.height;
+    canvas.width =
+        width * dpr;
+    canvas.height =
+        height * dpr;
+    const ctx =
+        canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    /*
+        四周留白
+    */
+    const padding = {
+        left: 55,
+        right: 18,
+        top: 25,
+        bottom: 42
+    };
+    const chartWidth =
+        width -
+        padding.left -
+        padding.right;
+    const chartHeight =
+        height -
+        padding.top -
+        padding.bottom;
+    const values =
+        data.map(
+            x => x.averageCost
+        );
+    let min =
+        Math.min(...values);
+    let max =
+        Math.max(...values);
+    if (min === max) {
+        min *= 0.95;
+        max *= 1.05;
+        if (min === 0) {
+            max = 1;
+        }
+    }
+    const range =
+        max - min;
+    min -= range * 0.12;
+    max += range * 0.12;
+    function xPosition(index) {
+        if (data.length === 1) {
+            return padding.left +
+                   chartWidth / 2;
+        }
+        return padding.left +
+            (
+                index /
+                (data.length - 1)
+            ) *
+            chartWidth;
+    }
+    function yPosition(value) {
+        return padding.top +
+            (
+                (max - value) /
+                (max - min)
+            ) *
+            chartHeight;
+    }
+    /* 背景 */
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+    /* 网格线 */
+    ctx.font =
+        "11px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    const gridCount = 5;
+    for (
+        let i = 0;
+        i <= gridCount;
+        i++
+    ) {
+        const ratio =
+            i / gridCount;
+        const y =
+            padding.top +
+            ratio *
+            chartHeight;
+        const value =
+            max -
+            ratio *
+            (max - min);
+        ctx.beginPath();
+        ctx.moveTo(
+            padding.left,
+            y
+        );
+        ctx.lineTo(
+            width - padding.right,
+            y
+        );
+        ctx.strokeStyle =
+            "#eeeeef";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle =
+            "#999";
+        ctx.fillText(
+            formatNumber(value),
+            padding.left - 8,
+            y
+        );
+    }
+    /* 折线 */
+    ctx.beginPath();
+    data.forEach((item, index) => {
+        const x =
+            xPosition(index);
+        const y =
+            yPosition(
+                item.averageCost
+            );
+        if (index === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+    ctx.strokeStyle =
+        "#007aff";
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
+    ctx.stroke();
+    /* 数据点 */
+    data.forEach((item, index) => {
+        const x =
+            xPosition(index);
+        const y =
+            yPosition(
+                item.averageCost
+            );
+        ctx.beginPath();
+        ctx.arc(
+            x,
+            y,
+            4,
+            0,
+            Math.PI * 2
+        );
+        ctx.fillStyle =
+            "#ffffff";
+        ctx.fill();
+        ctx.strokeStyle =
+            "#007aff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        /* 横坐标 */
+        ctx.fillStyle =
+            "#888";
+        ctx.font =
+            "10px -apple-system, BlinkMacSystemFont, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(
+            formatMonthShort(item.month),
+            x,
+            height - padding.bottom + 12
+        );
+    });
+    /* Y轴单位说明 */
+    ctx.fillStyle =
+        "#888";
+    ctx.font =
+        "11px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(
+        "平均成本",
+        padding.left,
+        5
+    );
+}
+function formatMonthShort(month) {
+    const parts =
+        month.split("-");
+    return `${parts[0].slice(2)}-${parts[1]}`;
+}
+/* ============================================================
+   Tab
+============================================================ */
+document
+    .querySelectorAll(".tab")
+    .forEach(tab => {
+        tab.addEventListener(
+            "click",
+            () => {
+                document
+                    .querySelectorAll(".tab")
+                    .forEach(x =>
+                        x.classList.remove(
+                            "active"
+                        )
+                    );
+                document
+                    .querySelectorAll(".page")
+                    .forEach(x =>
+                        x.classList.remove(
+                            "active"
+                        )
+                    );
+                tab.classList.add(
+                    "active"
+                );
+                document
+                    .getElementById(
+                        tab.dataset.page
+                    )
+                    .classList.add(
+                        "active"
+                    );
+                if (
+                    tab.dataset.page ===
+                    "chartPage"
+                ) {
+                    renderChartPage();
+                }
+                if (
+                    tab.dataset.page ===
+                    "settingsPage"
+                ) {
+                    updateDataInfo();
+                }
+            }
+        );
+    });
+/* ============================================================
+   JSON 导出
+============================================================ */
+function exportData() {
+    const exportObject = {
+        version: 1,
+        exportedAt:
+            new Date().toISOString(),
+        data: db
+    };
+    const json =
+        JSON.stringify(
+            exportObject,
+            null,
+            2
+        );
+    const blob =
+        new Blob(
+            [json],
+            {
+                type:
+                    "application/json;charset=utf-8"
+            }
+        );
+    const url =
+        URL.createObjectURL(blob);
+    const a =
+        document.createElement("a");
+    const date =
+        todayString();
+    a.href = url;
+    a.download =
+        `investment-record-${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast("数据导出成功");
+}
+/* ============================================================
+   JSON 导入
+============================================================ */
+function importData(event) {
+    const file =
+        event.target.files[0];
+    if (!file) return;
+    const reader =
+        new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported =
+                JSON.parse(
+                    e.target.result
+                );
+            let newData;
+            /*
+                支持：
+                {
+                    version: 1,
+                    data: {
+                        assets: [...]
+                    }
+                }
+                同时兼容直接导出的：
+                {
+                    assets: [...]
+                }
+            */
+            if (
+                imported &&
+                imported.data &&
+                Array.isArray(
+                    imported.data.assets
+                )
+            ) {
+                newData =
+                    imported.data;
+            }
+            else if (
+                imported &&
+                Array.isArray(
+                    imported.assets
+                )
+            ) {
+                newData =
+                    imported;
+            }
+            else {
+                throw new Error(
+                    "JSON 数据格式不正确"
+                );
+            }
+            /*
+                基础数据清洗
+            */
+            newData.assets =
+                newData.assets
+                    .filter(
+                        asset =>
+                            asset &&
+                            typeof asset ===
+                            "object"
+                    )
+                    .map(asset => ({
+                        id:
+                            asset.id ||
+                            generateId(),
+                        name:
+                            String(
+                                asset.name ||
+                                "未命名资产"
+                            ),
+                        note:
+                            String(
+                                asset.note || ""
+                            ),
+                        createdAt:
+                            asset.createdAt ||
+                            new Date().toISOString(),
+                        transactions:
+                            Array.isArray(
+                                asset.transactions
+                            )
+                            ? asset.transactions
+                            : []
+                    }));
+            const confirmed =
+                confirm(
+                    `确定导入吗？\n\n导入后会覆盖当前的 ${db.assets.length} 个资产。`
+                );
+            if (!confirmed) {
+                event.target.value = "";
+                return;
+            }
+            db = newData;
+            saveData();
+            renderAssets();
+            renderChartPage();
+            updateDataInfo();
+            showToast("数据导入成功");
+        }
+        catch(error) {
+            console.error(error);
+            alert(
+                "导入失败：JSON 文件格式不正确。"
+            );
+        }
+        event.target.value = "";
+    };
+    reader.readAsText(file);
+}
+/* ============================================================
+   删除全部数据
+============================================================ */
+function clearAllData() {
+    const confirmed =
+        confirm(
+            "确定删除全部数据吗？\n\n这个操作无法恢复。"
+        );
+    if (!confirmed) return;
+    const confirmedAgain =
+        confirm(
+            "再次确认：删除所有资产和交易记录？"
+        );
+    if (!confirmedAgain) return;
+    db = {
+        assets: []
+    };
+    saveData();
+    renderAssets();
+    renderChartPage();
+    showToast("全部数据已删除");
+}
+/* ============================================================
+   数据统计
+============================================================ */
+function updateDataInfo() {
+    const info =
+        document.getElementById(
+            "dataInfo"
+        );
+    if (!info) return;
+    const assetCount =
+        db.assets.length;
+    const transactionCount =
+        db.assets.reduce(
+            (sum, asset) =>
+                sum +
+                asset.transactions.length,
+            0
+        );
+    let storageSize = 0;
+    try {
+        storageSize =
+            new Blob([
+                JSON.stringify(db)
+            ]).size;
+    } catch(e) {}
+    info.innerHTML = `
+        当前共有
+        <strong>${assetCount}</strong>
+        个资产，
+        <strong>${transactionCount}</strong>
+        条交易记录。
+        <br>
+        LocalStorage 数据约
+        <strong>${formatBytes(storageSize)}</strong>。
+    `;
+}
+function formatBytes(bytes) {
+    if (bytes < 1024) {
+        return bytes + " B";
+    }
+    if (bytes < 1024 * 1024) {
+        return (
+            bytes / 1024
+        ).toFixed(1) + " KB";
+    }
+    return (
+        bytes /
+        1024 /
+        1024
+    ).toFixed(1) + " MB";
+}
+/* ============================================================
+   HTML 安全处理
+============================================================ */
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+/* ============================================================
+   Modal 点击背景关闭
+============================================================ */
+document
+    .querySelectorAll(".modal")
+    .forEach(modal => {
+        modal.addEventListener(
+            "click",
+            function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove(
+                        "show"
+                    );
+                }
+            }
+        );
+    });
+/* ============================================================
+   ESC 关闭 Modal
+============================================================ */
+document.addEventListener(
+    "keydown",
+    function(e) {
+        if (e.key === "Escape") {
+            document
+                .querySelectorAll(".modal")
+                .forEach(modal =>
+                    modal.classList.remove(
+                        "show"
+                    )
+                );
+        }
+    }
+);
+/* ============================================================
+   Canvas 自适应
+============================================================ */
+window.addEventListener(
+    "resize",
+    function() {
+        const chartPage =
+            document.getElementById(
+                "chartPage"
+            );
+        if (
+            chartPage.classList.contains(
+                "active"
+            )
+        ) {
+            renderCostChart();
+        }
+    }
+);
+/* ============================================================
+   初始化
+============================================================ */
+renderAssets();
+renderChartPage();
+updateDataInfo();
+</script>
+</body>
+</html>
