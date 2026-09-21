@@ -2,7 +2,9 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
 <title>投资资产记录</title>
 
 <style>
@@ -20,7 +22,6 @@
     --blue: #007aff;
     --green: #34c759;
     --red: #ff3b30;
-    --orange: #ff9500;
     --shadow: 0 2px 12px rgba(0,0,0,.05);
 }
 
@@ -30,7 +31,6 @@ body {
         -apple-system,
         BlinkMacSystemFont,
         "SF Pro Display",
-        "SF Pro Text",
         "Helvetica Neue",
         Arial,
         sans-serif;
@@ -64,7 +64,6 @@ button {
     margin: 0;
     font-size: 28px;
     font-weight: 700;
-    letter-spacing: -0.5px;
 }
 
 .header p {
@@ -217,6 +216,7 @@ button {
     background: #f7f7f8;
     border-radius: 9px;
     padding: 9px;
+    min-width: 0;
 }
 
 .stat-label {
@@ -228,6 +228,7 @@ button {
     margin-top: 3px;
     font-size: 14px;
     font-weight: 600;
+    word-break: break-all;
 }
 
 .asset-actions {
@@ -304,17 +305,20 @@ select:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
 }
 
 .transaction-left {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 }
 
 .type-badge {
     width: 38px;
     height: 38px;
+    flex-shrink: 0;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -342,10 +346,12 @@ select:focus {
     color: var(--subtext);
     font-size: 12px;
     margin-top: 3px;
+    line-height: 1.5;
 }
 
 .transaction-amount {
     text-align: right;
+    flex-shrink: 0;
 }
 
 .transaction-price {
@@ -378,6 +384,7 @@ select:focus {
     background: #f7f7f8;
     border-radius: 11px;
     padding: 13px;
+    min-width: 0;
 }
 
 .summary-label {
@@ -387,8 +394,9 @@ select:focus {
 
 .summary-value {
     margin-top: 5px;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
+    word-break: break-all;
 }
 
 /* ================= Chart ================= */
@@ -414,8 +422,6 @@ canvas {
     color: var(--subtext);
     font-size: 14px;
 }
-
-/* ================= Month ================= */
 
 .month-selector {
     display: flex;
@@ -547,8 +553,6 @@ canvas {
     transform: translateX(-50%) translateY(0);
 }
 
-/* ================= Responsive ================= */
-
 @media (max-width: 600px) {
 
     .header h1 {
@@ -590,7 +594,6 @@ canvas {
     .modal-box {
         border-radius: 20px;
     }
-
 }
 </style>
 </head>
@@ -599,319 +602,297 @@ canvas {
 
 <div class="app">
 
-    <header class="header">
-        <h1>投资资产记录</h1>
-        <p>记录实际投入金额，自动计算持仓成本</p>
-    </header>
+<header class="header">
+    <h1>投资资产记录</h1>
+    <p>记录实际交易金额，精确到小数点后 9 位</p>
+</header>
 
-    <nav class="tabs">
+<nav class="tabs">
 
-        <button
-            class="tab active"
-            data-page="assetsPage">
-            资产
-        </button>
+    <button class="tab active" data-page="assetsPage">
+        资产
+    </button>
 
-        <button
-            class="tab"
-            data-page="chartPage">
-            图表
-        </button>
+    <button class="tab" data-page="chartPage">
+        图表
+    </button>
 
-        <button
-            class="tab"
-            data-page="settingsPage">
-            数据
-        </button>
+    <button class="tab" data-page="settingsPage">
+        数据
+    </button>
 
-    </nav>
+</nav>
 
 
-    <main class="content">
+<main class="content">
 
-        <!-- ================= 资产 ================= -->
+<!-- =========================================================
+     资产
+========================================================= -->
 
-        <section
-            id="assetsPage"
-            class="page active">
+<section id="assetsPage" class="page active">
 
-            <div class="card">
+    <div class="card">
 
-                <div class="card-header">
+        <div class="card-header">
 
-                    <div class="card-title">
-                        我的资产
-                    </div>
+            <div class="card-title">
+                我的资产
+            </div>
 
-                    <button
-                        class="primary-btn"
-                        onclick="openAssetModal()">
-                        ＋ 新建资产
+            <button class="primary-btn"
+                    onclick="openAssetModal()">
+                ＋ 新建资产
+            </button>
+
+        </div>
+
+        <div class="card-body">
+
+            <div id="assetList"
+                 class="asset-list">
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     图表
+========================================================= -->
+
+<section id="chartPage" class="page">
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div class="card-title">
+                平均成本走势
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="form-group">
+
+                <label>
+                    选择资产
+                </label>
+
+                <select id="chartAssetSelect"
+                        onchange="renderChartPage()">
+                </select>
+
+            </div>
+
+            <div style="height:15px"></div>
+
+            <div id="monthSelector"
+                 class="month-selector">
+            </div>
+
+            <div class="chart-container">
+
+                <canvas id="costChart"></canvas>
+
+                <div id="chartEmpty"
+                     class="chart-empty"
+                     style="display:none">
+                    暂无交易数据
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div class="card-title">
+                计算方式
+            </div>
+
+        </div>
+
+        <div class="card-body"
+             style="
+                font-size:13px;
+                line-height:1.8;
+                color:#666;
+             ">
+
+            <p>
+                每笔交易记录的是
+                <strong>实际交易金额</strong>
+                和
+                <strong>数量</strong>。
+            </p>
+
+            <p>
+                成交单价 =
+                <strong>交易金额 ÷ 数量</strong>。
+            </p>
+
+            <p>
+                买入时，交易金额加入持仓成本。
+                卖出时，按照卖出前的平均成本扣除对应的持仓成本。
+            </p>
+
+            <p>
+                所有金额、数量、单价和平均成本均支持
+                <strong>9 位小数</strong>。
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     数据
+========================================================= -->
+
+<section id="settingsPage" class="page">
+
+    <div class="card">
+
+        <div class="card-header">
+
+            <div class="card-title">
+                数据管理
+            </div>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="setting-row">
+
+                <div class="setting-title">
+                    导出数据
+                </div>
+
+                <div class="setting-description">
+                    将所有资产和交易记录导出为 JSON。
+                </div>
+
+                <div class="setting-actions">
+
+                    <button class="primary-btn"
+                            onclick="exportData()">
+                        导出 JSON
                     </button>
 
                 </div>
 
-
-                <div class="card-body">
-
-                    <div
-                        id="assetList"
-                        class="asset-list">
-                    </div>
-
-                </div>
-
             </div>
 
-        </section>
 
+            <div class="setting-row">
 
-        <!-- ================= 图表 ================= -->
-
-        <section
-            id="chartPage"
-            class="page">
-
-            <div class="card">
-
-                <div class="card-header">
-
-                    <div class="card-title">
-                        平均成本走势
-                    </div>
-
+                <div class="setting-title">
+                    导入数据
                 </div>
 
+                <div class="setting-description">
+                    从之前导出的 JSON 文件恢复数据。
+                </div>
 
-                <div class="card-body">
+                <div class="setting-actions">
 
-                    <div class="form-group">
+                    <button class="secondary-btn"
+                            onclick="
+                                document
+                                .getElementById('importFile')
+                                .click()
+                            ">
+                        导入 JSON
+                    </button>
 
-                        <label>
-                            选择资产
-                        </label>
-
-                        <select
-                            id="chartAssetSelect"
-                            onchange="renderChartPage()">
-                        </select>
-
-                    </div>
-
-
-                    <div style="height:15px"></div>
-
-
-                    <div
-                        id="monthSelector"
-                        class="month-selector">
-                    </div>
-
-
-                    <div class="chart-container">
-
-                        <canvas
-                            id="costChart">
-                        </canvas>
-
-                        <div
-                            id="chartEmpty"
-                            class="chart-empty"
-                            style="display:none">
-                            暂无交易数据
-                        </div>
-
-                    </div>
+                    <input id="importFile"
+                           type="file"
+                           accept=".json,application/json"
+                           style="display:none"
+                           onchange="importData(event)">
 
                 </div>
 
             </div>
 
 
-            <div class="card">
+            <div class="setting-row">
 
-                <div class="card-header">
-
-                    <div class="card-title">
-                        计算方式
-                    </div>
-
+                <div class="setting-title">
+                    当前数据
                 </div>
 
+                <div id="dataInfo"
+                     class="setting-description">
+                </div>
 
-                <div
-                    class="card-body"
-                    style="
-                        font-size:13px;
-                        line-height:1.8;
-                        color:#666;
-                    ">
+            </div>
 
-                    <p>
-                        每笔交易记录的是<strong>实际交易金额</strong>和<strong>数量</strong>。
-                    </p>
 
-                    <p>
-                        系统自动计算成交单价：
-                        <strong>交易金额 ÷ 数量</strong>。
-                    </p>
+            <div class="setting-row">
 
-                    <p>
-                        买入时，交易金额加入持仓成本。
-                        卖出时，按照当时的平均成本扣除对应的持仓成本。
-                    </p>
+                <div class="setting-title"
+                     style="color:var(--red)">
+                    删除全部数据
+                </div>
 
-                    <p>
-                        因此卖出不会改变剩余持仓的单位平均成本。
-                    </p>
+                <div class="setting-description">
+                    此操作无法恢复。
+                </div>
+
+                <div class="setting-actions">
+
+                    <button class="danger-btn"
+                            onclick="clearAllData()">
+                        删除全部数据
+                    </button>
 
                 </div>
 
             </div>
 
-        </section>
+        </div>
 
+    </div>
 
-        <!-- ================= 数据 ================= -->
+</section>
 
-        <section
-            id="settingsPage"
-            class="page">
-
-            <div class="card">
-
-                <div class="card-header">
-
-                    <div class="card-title">
-                        数据管理
-                    </div>
-
-                </div>
-
-
-                <div class="card-body">
-
-                    <div class="setting-row">
-
-                        <div class="setting-title">
-                            导出数据
-                        </div>
-
-                        <div class="setting-description">
-                            将所有资产和交易记录导出为 JSON。
-                        </div>
-
-                        <div class="setting-actions">
-
-                            <button
-                                class="primary-btn"
-                                onclick="exportData()">
-                                导出 JSON
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="setting-row">
-
-                        <div class="setting-title">
-                            导入数据
-                        </div>
-
-                        <div class="setting-description">
-                            从之前导出的 JSON 文件恢复数据。
-                        </div>
-
-                        <div class="setting-actions">
-
-                            <button
-                                class="secondary-btn"
-                                onclick="document.getElementById('importFile').click()">
-                                导入 JSON
-                            </button>
-
-                            <input
-                                id="importFile"
-                                type="file"
-                                accept=".json,application/json"
-                                style="display:none"
-                                onchange="importData(event)"
-                            >
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="setting-row">
-
-                        <div class="setting-title">
-                            当前数据
-                        </div>
-
-                        <div
-                            class="setting-description"
-                            id="dataInfo">
-                        </div>
-
-                    </div>
-
-
-                    <div class="setting-row">
-
-                        <div
-                            class="setting-title"
-                            style="color:var(--red)">
-                            删除全部数据
-                        </div>
-
-                        <div class="setting-description">
-                            此操作无法恢复。
-                        </div>
-
-                        <div class="setting-actions">
-
-                            <button
-                                class="danger-btn"
-                                onclick="clearAllData()">
-                                删除全部数据
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
+</main>
 </div>
 
 
-<!-- ================= 新建资产 ================= -->
+<!-- =========================================================
+     新建资产
+========================================================= -->
 
-<div
-    id="assetModal"
-    class="modal">
+<div id="assetModal"
+     class="modal">
 
     <div class="modal-box">
 
-        <button
-            class="modal-close"
-            onclick="closeAssetModal()">
+        <button class="modal-close"
+                onclick="closeAssetModal()">
             ×
         </button>
 
         <div class="modal-title">
             新建资产
         </div>
-
 
         <form id="assetForm">
 
@@ -921,17 +902,14 @@ canvas {
                     资产名称
                 </label>
 
-                <input
-                    id="assetName"
-                    type="text"
-                    placeholder="例如：VOO、QQQ、TSLA、BTC"
-                    required>
+                <input id="assetName"
+                       type="text"
+                       placeholder="例如：VOO、QQQ、TSLA、ADA"
+                       required>
 
             </div>
 
-
             <div style="height:14px"></div>
-
 
             <div class="form-group">
 
@@ -939,26 +917,22 @@ canvas {
                     备注
                 </label>
 
-                <input
-                    id="assetNote"
-                    type="text"
-                    placeholder="可选">
+                <input id="assetNote"
+                       type="text"
+                       placeholder="可选">
 
             </div>
 
-
             <div class="form-actions">
 
-                <button
-                    type="button"
-                    class="secondary-btn"
-                    onclick="closeAssetModal()">
+                <button type="button"
+                        class="secondary-btn"
+                        onclick="closeAssetModal()">
                     取消
                 </button>
 
-                <button
-                    type="submit"
-                    class="primary-btn">
+                <button type="submit"
+                        class="primary-btn">
                     创建资产
                 </button>
 
@@ -971,37 +945,32 @@ canvas {
 </div>
 
 
-<!-- ================= 交易 ================= -->
+<!-- =========================================================
+     交易
+========================================================= -->
 
-<div
-    id="transactionModal"
-    class="modal">
+<div id="transactionModal"
+     class="modal">
 
     <div class="modal-box">
 
-        <button
-            class="modal-close"
-            onclick="closeTransactionModal()">
+        <button class="modal-close"
+                onclick="closeTransactionModal()">
             ×
         </button>
 
-
-        <div
-            class="modal-title"
-            id="transactionModalTitle">
+        <div id="transactionModalTitle"
+             class="modal-title">
             新增交易
         </div>
 
-
         <form id="transactionForm">
 
-            <input
-                type="hidden"
-                id="editingTransactionId">
+            <input type="hidden"
+                   id="editingTransactionId">
 
-            <input
-                type="hidden"
-                id="transactionAssetId">
+            <input type="hidden"
+                   id="transactionAssetId">
 
 
             <div class="form-grid">
@@ -1033,10 +1002,9 @@ canvas {
                         日期
                     </label>
 
-                    <input
-                        id="transactionDate"
-                        type="date"
-                        required>
+                    <input id="transactionDate"
+                           type="date"
+                           required>
 
                 </div>
 
@@ -1047,13 +1015,13 @@ canvas {
                         实际交易金额
                     </label>
 
-                    <input
-                        id="transactionAmount"
-                        type="number"
-                        step="any"
-                        min="0"
-                        placeholder="例如：1000"
-                        required>
+                    <input id="transactionAmount"
+                           type="number"
+                           step="0.000000001"
+                           min="0"
+                           inputmode="decimal"
+                           placeholder="例如：1000.123456789"
+                           required>
 
                 </div>
 
@@ -1064,13 +1032,13 @@ canvas {
                         数量
                     </label>
 
-                    <input
-                        id="transactionQuantity"
-                        type="number"
-                        step="any"
-                        min="0"
-                        placeholder="例如：1.65"
-                        required>
+                    <input id="transactionQuantity"
+                           type="number"
+                           step="0.000000001"
+                           min="0"
+                           inputmode="decimal"
+                           placeholder="例如：1.234567890"
+                           required>
 
                 </div>
 
@@ -1078,19 +1046,18 @@ canvas {
                 <div class="form-group full">
 
                     <label>
-                        自动计算的成交单价
+                        自动计算成交单价
                     </label>
 
-                    <div
-                        id="calculatedPrice"
-                        style="
+                    <div id="calculatedPrice"
+                         style="
                             background:#f7f7f8;
                             border-radius:10px;
                             padding:11px 12px;
                             font-weight:600;
-                            color:#333;
-                        ">
-                        0
+                            word-break:break-all;
+                         ">
+                        0.000000000
                     </div>
 
                 </div>
@@ -1102,27 +1069,27 @@ canvas {
                         备注
                     </label>
 
-                    <input
-                        id="transactionNote"
-                        type="text"
-                        placeholder="可选，例如：月度定投">
+                    <input id="transactionNote"
+                           type="text"
+                           placeholder="可选，例如：月度定投">
 
                 </div>
 
             </div>
 
 
-            <div
-                style="
-                    margin-top:12px;
-                    padding:11px;
-                    border-radius:10px;
-                    background:#f7f7f8;
-                    font-size:13px;
-                    color:#666;
-                ">
+            <div style="
+                margin-top:12px;
+                padding:11px;
+                border-radius:10px;
+                background:#f7f7f8;
+                font-size:13px;
+                color:#666;
+                line-height:1.6;
+            ">
 
                 本次交易：
+
                 <strong id="transactionSummary">
                     —
                 </strong>
@@ -1132,16 +1099,14 @@ canvas {
 
             <div class="form-actions">
 
-                <button
-                    type="button"
-                    class="secondary-btn"
-                    onclick="closeTransactionModal()">
+                <button type="button"
+                        class="secondary-btn"
+                        onclick="closeTransactionModal()">
                     取消
                 </button>
 
-                <button
-                    type="submit"
-                    class="primary-btn">
+                <button type="submit"
+                        class="primary-btn">
                     保存
                 </button>
 
@@ -1154,17 +1119,17 @@ canvas {
 </div>
 
 
-<!-- ================= 资产详情 ================= -->
+<!-- =========================================================
+     资产详情
+========================================================= -->
 
-<div
-    id="assetDetailModal"
-    class="modal">
+<div id="assetDetailModal"
+     class="modal">
 
     <div class="modal-box">
 
-        <button
-            class="modal-close"
-            onclick="closeAssetDetailModal()">
+        <button class="modal-close"
+                onclick="closeAssetDetailModal()">
             ×
         </button>
 
@@ -1175,29 +1140,303 @@ canvas {
 </div>
 
 
-<div
-    id="toast"
-    class="toast">
+<div id="toast"
+     class="toast">
 </div>
 
 
 <script>
 
 /* ============================================================
+   9 位定点精度系统
+============================================================ */
+
+/*
+    所有内部金额和数量：
+
+        1.234567890
+
+    存储为：
+
+        1234567890
+
+    即：
+
+        实际值 × 1,000,000,000
+
+    这样避免 JavaScript 浮点计算误差。
+*/
+
+const SCALE = 1000000000;
+
+
+/*
+    将用户输入的十进制字符串
+    转换成 9 位定点整数。
+
+    例如：
+
+    "1.234567891"
+        ↓
+    1234567891
+*/
+
+function decimalToScaled(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return 0;
+    }
+
+    let str = String(value).trim();
+
+    if (!str) {
+        return 0;
+    }
+
+    /*
+        支持：
+
+        1
+        1.2
+        1.234567890
+        .5
+        0.5
+    */
+
+    let negative = false;
+
+    if (str.startsWith("-")) {
+
+        negative = true;
+
+        str = str.substring(1);
+
+    }
+
+    const parts = str.split(".");
+
+    let integerPart =
+        parts[0] || "0";
+
+    let decimalPart =
+        parts[1] || "";
+
+    decimalPart =
+        decimalPart
+        .replace(/\D/g, "");
+
+    /*
+        最多 9 位。
+
+        第 10 位开始四舍五入。
+    */
+
+    let roundedExtra = 0;
+
+    if (
+        decimalPart.length > 9
+    ) {
+
+        roundedExtra =
+            Number(
+                decimalPart.charAt(9)
+            ) >= 5
+                ? 1
+                : 0;
+
+        decimalPart =
+            decimalPart.substring(
+                0,
+                9
+            );
+
+    }
+
+    decimalPart =
+        decimalPart.padEnd(
+            9,
+            "0"
+        );
+
+
+    /*
+        避免 Number 解析极大数字
+        时产生小数误差。
+
+        这里假定投资记录处于
+        正常金融数量级。
+    */
+
+    let result =
+        Number(integerPart) *
+        SCALE +
+        Number(decimalPart);
+
+
+    result += roundedExtra;
+
+
+    return negative
+        ? -result
+        : result;
+}
+
+
+/*
+    定点整数 → 9 位小数。
+
+    例如：
+
+    1234567890
+
+    →
+
+    1.234567890
+*/
+
+function scaledToDecimal(
+    scaled,
+    trim = false
+) {
+
+    if (
+        !Number.isFinite(
+            Number(scaled)
+        )
+    ) {
+
+        return "0.000000000";
+
+    }
+
+    const negative =
+        scaled < 0;
+
+    let value =
+        Math.abs(
+            Math.round(
+                scaled
+            )
+        );
+
+
+    const integerPart =
+        Math.floor(
+            value / SCALE
+        );
+
+
+    const fraction =
+        String(
+            value % SCALE
+        ).padStart(
+            9,
+            "0"
+        );
+
+
+    if (
+        trim
+    ) {
+
+        const trimmed =
+            fraction.replace(
+                /0+$/,
+                ""
+            );
+
+
+        if (
+            trimmed.length === 0
+        ) {
+
+            return (
+                negative
+                    ? "-"
+                    : ""
+            ) +
+            String(
+                integerPart
+            );
+
+        }
+
+
+        return (
+            negative
+                ? "-"
+                : ""
+        ) +
+        integerPart +
+        "." +
+        trimmed;
+
+    }
+
+
+    return (
+        negative
+            ? "-"
+            : ""
+    ) +
+    integerPart +
+    "." +
+    fraction;
+}
+
+
+/*
+    为了兼容旧版本 JSON，
+    将旧版 Number 转成定点整数。
+*/
+
+function normalizeScaledValue(
+    value
+) {
+
+    if (
+        typeof value === "number"
+    ) {
+
+        /*
+            如果看起来已经是定点整数，
+            不应该直接当普通金额。
+
+            本版本 JSON 使用：
+
+                amountScaled
+                quantityScaled
+
+            因此这里主要处理旧数据。
+        */
+
+        return decimalToScaled(
+            value.toString()
+        );
+
+    }
+
+
+    return decimalToScaled(
+        value
+    );
+}
+
+
+/* ============================================================
    数据
 ============================================================ */
 
 const STORAGE_KEY =
-    "investment_asset_records_v2";
-
+    "investment_asset_records_v3";
 
 let db =
     loadData();
 
-
-/* ============================================================
-   基础工具
-============================================================ */
 
 function generateId() {
 
@@ -1219,12 +1458,18 @@ function todayString() {
     const m =
         String(
             now.getMonth() + 1
-        ).padStart(2, "0");
+        ).padStart(
+            2,
+            "0"
+        );
 
     const d =
         String(
             now.getDate()
-        ).padStart(2, "0");
+        ).padStart(
+            2,
+            "0"
+        );
 
     return `${y}-${m}-${d}`;
 
@@ -1256,6 +1501,7 @@ function loadData() {
         if (!raw) {
 
             return {
+                version: 3,
                 assets: []
             };
 
@@ -1268,25 +1514,189 @@ function loadData() {
 
         if (
             !parsed.assets ||
-            !Array.isArray(parsed.assets)
+            !Array.isArray(
+                parsed.assets
+            )
         ) {
 
             return {
+                version: 3,
                 assets: []
             };
 
         }
 
 
+        /*
+            兼容之前版本。
+
+            如果发现：
+
+                amount
+                quantity
+
+            自动转换为：
+
+                amountScaled
+                quantityScaled
+        */
+
+        parsed.assets =
+            parsed.assets.map(
+                asset => {
+
+                    asset.transactions =
+                        (
+                            Array.isArray(
+                                asset.transactions
+                            )
+                            ? asset.transactions
+                            : []
+                        ).map(
+                            tx => {
+
+                                if (
+                                    tx.amountScaled !==
+                                    undefined
+                                ) {
+
+                                    /*
+                                        新版本
+                                    */
+
+                                    return tx;
+
+                                }
+
+
+                                /*
+                                    v2：
+
+                                    amount
+                                    quantity
+                                */
+
+                                if (
+                                    tx.amount !==
+                                    undefined
+                                ) {
+
+                                    return {
+
+                                        id:
+                                            tx.id ||
+                                            generateId(),
+
+                                        type:
+                                            tx.type,
+
+                                        date:
+                                            tx.date,
+
+                                        amountScaled:
+                                            decimalToScaled(
+                                                tx.amount
+                                            ),
+
+                                        quantityScaled:
+                                            decimalToScaled(
+                                                tx.quantity
+                                            ),
+
+                                        note:
+                                            tx.note ||
+                                            ""
+
+                                    };
+
+                                }
+
+
+                                /*
+                                    更早版本：
+
+                                    price
+                                    quantity
+
+                                    amount =
+                                    price × quantity
+                                */
+
+                                if (
+                                    tx.price !==
+                                    undefined &&
+                                    tx.quantity !==
+                                    undefined
+                                ) {
+
+                                    const quantityScaled =
+                                        decimalToScaled(
+                                            tx.quantity
+                                        );
+
+                                    const priceScaled =
+                                        decimalToScaled(
+                                            tx.price
+                                        );
+
+
+                                    const amountScaled =
+                                        Math.round(
+                                            priceScaled *
+                                            quantityScaled /
+                                            SCALE
+                                        );
+
+
+                                    return {
+
+                                        id:
+                                            tx.id ||
+                                            generateId(),
+
+                                        type:
+                                            tx.type,
+
+                                        date:
+                                            tx.date,
+
+                                        amountScaled,
+
+                                        quantityScaled,
+
+                                        note:
+                                            tx.note ||
+                                            ""
+
+                                    };
+
+                                }
+
+
+                                return tx;
+
+                            }
+                        );
+
+
+                    return asset;
+
+                }
+            );
+
+
+        parsed.version = 3;
+
+
         return parsed;
 
     }
-
     catch (error) {
 
         console.error(error);
 
         return {
+            version: 3,
             assets: []
         };
 
@@ -1295,45 +1705,40 @@ function loadData() {
 }
 
 
-function formatNumber(
-    value,
-    digits = 2
+/* ============================================================
+   显示格式
+============================================================ */
+
+function formatScaled(
+    value
 ) {
 
-    if (
-        !Number.isFinite(
-            Number(value)
-        )
-    ) {
-
-        return "0";
-
-    }
-
-
-    return Number(value)
-        .toLocaleString(
-            "zh-CN",
-            {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: digits
-            }
-        );
-
-}
-
-
-function formatMoney(value) {
-
-    return formatNumber(
+    return scaledToDecimal(
         value,
-        2
+        false
     );
 
 }
 
 
-function showToast(message) {
+/*
+    图表 / 计算显示也保持 9 位。
+*/
+
+function formatNumber(
+    value
+) {
+
+    return formatScaled(
+        value
+    );
+
+}
+
+
+function showToast(
+    message
+) {
 
     const toast =
         document.getElementById(
@@ -1350,13 +1755,45 @@ function showToast(message) {
     );
 
 
-    setTimeout(() => {
+    setTimeout(
+        () => {
 
-        toast.classList.remove(
-            "show"
+            toast.classList.remove(
+                "show"
+            );
+
+        },
+        1800
+    );
+
+}
+
+
+function escapeHtml(
+    value
+) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
         );
-
-    }, 1800);
 
 }
 
@@ -1366,68 +1803,90 @@ function showToast(message) {
 ============================================================ */
 
 /*
-    所有交易按照日期重新计算。
+    quantityScaled：
+
+        当前持仓数量 × SCALE
+
+    costScaled：
+
+        当前持仓总成本 × SCALE
+
+    averageCostScaled：
+
+        平均成本 × SCALE
+
 
     买入：
 
-    新成本 =
-    旧成本 + 本次买入金额
+        cost += amount
 
-    新数量 =
-    旧数量 + 本次买入数量
+        quantity += quantity
 
 
     卖出：
 
-    当前平均成本 =
-    当前成本 / 当前数量
+        averageCost =
+            cost / quantity
 
-    卖出对应成本 =
-    当前平均成本 × 卖出数量
+        卖出成本 =
+            averageCost × sellQuantity
 
-    剩余成本 =
-    当前成本 - 卖出对应成本
+        这里要重新转换成
+        SCALE 单位。
 
+        因为：
 
-    注意：
+        costScaled / quantityScaled
 
-    卖出金额不会加入成本。
-    卖出金额只代表你实际收到的钱。
+        得到的是普通的
+        "金额 / 数量"
+
+        所以：
+
+        averageCostScaled =
+            costScaled * SCALE
+            / quantityScaled
 
 */
 
-function calculateAsset(asset) {
+function calculateAsset(
+    asset
+) {
 
     const transactions =
         [...asset.transactions]
         .sort(sortTransactions);
 
 
-    let quantity = 0;
+    let quantityScaled = 0;
 
-    let cost = 0;
+    let costScaled = 0;
 
-    let totalBuyAmount = 0;
+    let totalBuyAmountScaled = 0;
 
-    let totalSellAmount = 0;
+    let totalSellAmountScaled = 0;
 
 
     for (
         const tx of transactions
     ) {
 
-        const amount =
-            Number(tx.amount);
+        const amountScaled =
+            getAmountScaled(tx);
 
-        const qty =
-            Number(tx.quantity);
+        const quantityScaledTx =
+            getQuantityScaled(tx);
 
 
         if (
-            !Number.isFinite(amount) ||
-            !Number.isFinite(qty) ||
-            amount < 0 ||
-            qty <= 0
+            !Number.isFinite(
+                amountScaled
+            ) ||
+            !Number.isFinite(
+                quantityScaledTx
+            ) ||
+            amountScaled < 0 ||
+            quantityScaledTx <= 0
         ) {
 
             continue;
@@ -1435,44 +1894,106 @@ function calculateAsset(asset) {
         }
 
 
-        if (tx.type === "buy") {
+        if (
+            tx.type === "buy"
+        ) {
 
-            cost += amount;
+            costScaled +=
+                amountScaled;
 
-            quantity += qty;
+            quantityScaled +=
+                quantityScaledTx;
 
-            totalBuyAmount += amount;
+            totalBuyAmountScaled +=
+                amountScaled;
 
         }
+
 
         else if (
             tx.type === "sell"
         ) {
 
-            if (quantity > 0) {
+            if (
+                quantityScaled > 0
+            ) {
 
-                const averageCost =
-                    cost / quantity;
+                /*
+                    卖出不能超过持仓。
+                */
 
-
-                const sellQuantity =
+                const sellQuantityScaled =
                     Math.min(
-                        qty,
-                        quantity
+                        quantityScaledTx,
+                        quantityScaled
                     );
 
 
-                cost -=
-                    averageCost *
-                    sellQuantity;
+                /*
+                    当前平均成本：
+
+                    cost / quantity
+
+                    再乘 SCALE，
+                    得到定点格式。
+                */
+
+                const averageCostScaled =
+                    Math.round(
+                        costScaled *
+                        SCALE /
+                        quantityScaled
+                    );
 
 
-                quantity -=
-                    sellQuantity;
+                /*
+                    卖出对应成本：
+
+                    averageCost × sellQuantity
+                */
+
+                const sellCostScaled =
+                    Math.round(
+                        averageCostScaled *
+                        sellQuantityScaled /
+                        SCALE
+                    );
 
 
-                totalSellAmount +=
-                    amount;
+                costScaled -=
+                    sellCostScaled;
+
+                quantityScaled -=
+                    sellQuantityScaled;
+
+
+                /*
+                    防止极小计算误差
+                */
+
+                if (
+                    Math.abs(
+                        costScaled
+                    ) < 1
+                ) {
+
+                    costScaled = 0;
+
+                }
+
+                if (
+                    Math.abs(
+                        quantityScaled
+                    ) < 1
+                ) {
+
+                    quantityScaled = 0;
+
+                }
+
+
+                totalSellAmountScaled +=
+                    amountScaled;
 
             }
 
@@ -1481,32 +2002,87 @@ function calculateAsset(asset) {
     }
 
 
-    const averageCost =
-        quantity > 0
-            ? cost / quantity
+    const averageCostScaled =
+        quantityScaled > 0
+            ? Math.round(
+                costScaled *
+                SCALE /
+                quantityScaled
+              )
             : 0;
 
 
     return {
 
-        quantity,
+        quantityScaled,
 
-        cost,
+        costScaled,
 
-        averageCost,
+        averageCostScaled,
 
-        totalBuyAmount,
+        totalBuyAmountScaled,
 
-        totalSellAmount
+        totalSellAmountScaled
 
     };
 
 }
 
 
-function sortTransactions(a, b) {
+function getAmountScaled(
+    tx
+) {
 
-    if (a.date !== b.date) {
+    if (
+        tx.amountScaled !==
+        undefined
+    ) {
+
+        return Number(
+            tx.amountScaled
+        );
+
+    }
+
+
+    return decimalToScaled(
+        tx.amount || 0
+    );
+
+}
+
+
+function getQuantityScaled(
+    tx
+) {
+
+    if (
+        tx.quantityScaled !==
+        undefined
+    ) {
+
+        return Number(
+            tx.quantityScaled
+        );
+
+    }
+
+
+    return decimalToScaled(
+        tx.quantity || 0
+    );
+
+}
+
+
+function sortTransactions(
+    a,
+    b
+) {
+
+    if (
+        a.date !== b.date
+    ) {
 
         return a.date.localeCompare(
             b.date
@@ -1526,7 +2102,9 @@ function sortTransactions(a, b) {
    月度平均成本
 ============================================================ */
 
-function calculateMonthlyCost(asset) {
+function calculateMonthlyCost(
+    asset
+) {
 
     const transactions =
         [...asset.transactions]
@@ -1542,9 +2120,9 @@ function calculateMonthlyCost(asset) {
     }
 
 
-    let quantity = 0;
+    let quantityScaled = 0;
 
-    let cost = 0;
+    let costScaled = 0;
 
 
     const monthData = {};
@@ -1554,18 +2132,16 @@ function calculateMonthlyCost(asset) {
         const tx of transactions
     ) {
 
-        const amount =
-            Number(tx.amount);
+        const amountScaled =
+            getAmountScaled(tx);
 
-        const qty =
-            Number(tx.quantity);
+        const quantityScaledTx =
+            getQuantityScaled(tx);
 
 
         if (
-            !Number.isFinite(amount) ||
-            !Number.isFinite(qty) ||
-            amount < 0 ||
-            qty <= 0
+            amountScaled < 0 ||
+            quantityScaledTx <= 0
         ) {
 
             continue;
@@ -1577,9 +2153,11 @@ function calculateMonthlyCost(asset) {
             tx.type === "buy"
         ) {
 
-            cost += amount;
+            costScaled +=
+                amountScaled;
 
-            quantity += qty;
+            quantityScaled +=
+                quantityScaledTx;
 
         }
 
@@ -1587,26 +2165,38 @@ function calculateMonthlyCost(asset) {
             tx.type === "sell"
         ) {
 
-            if (quantity > 0) {
+            if (
+                quantityScaled > 0
+            ) {
 
-                const averageCost =
-                    cost / quantity;
-
-
-                const sellQuantity =
+                const sellQuantityScaled =
                     Math.min(
-                        qty,
-                        quantity
+                        quantityScaledTx,
+                        quantityScaled
                     );
 
 
-                cost -=
-                    averageCost *
-                    sellQuantity;
+                const averageCostScaled =
+                    Math.round(
+                        costScaled *
+                        SCALE /
+                        quantityScaled
+                    );
 
 
-                quantity -=
-                    sellQuantity;
+                const sellCostScaled =
+                    Math.round(
+                        averageCostScaled *
+                        sellQuantityScaled /
+                        SCALE
+                    );
+
+
+                costScaled -=
+                    sellCostScaled;
+
+                quantityScaled -=
+                    sellQuantityScaled;
 
             }
 
@@ -1620,17 +2210,30 @@ function calculateMonthlyCost(asset) {
             );
 
 
-        const averageCost =
-            quantity > 0
-                ? cost / quantity
+        const averageCostScaled =
+            quantityScaled > 0
+                ? Math.round(
+                    costScaled *
+                    SCALE /
+                    quantityScaled
+                  )
                 : 0;
 
+
+        /*
+            同一个月有多次交易：
+
+            后面的交易覆盖前面的结果。
+
+            因此月度数据代表：
+            "这个月最后一笔交易之后的平均成本"
+        */
 
         monthData[month] = {
 
             month,
 
-            averageCost
+            averageCostScaled
 
         };
 
@@ -1650,7 +2253,7 @@ function calculateMonthlyCost(asset) {
 
 
 /* ============================================================
-   Assets
+   Asset List
 ============================================================ */
 
 function renderAssets() {
@@ -1702,9 +2305,11 @@ function renderAssets() {
                             <div>
 
                                 <div class="asset-name">
+
                                     ${escapeHtml(
                                         asset.name
                                     )}
+
                                 </div>
 
                                 <div class="asset-meta">
@@ -1733,9 +2338,11 @@ function renderAssets() {
                                 </div>
 
                                 <div class="stat-value">
-                                    ${formatNumber(
-                                        stat.quantity
+
+                                    ${formatScaled(
+                                        stat.quantityScaled
                                     )}
+
                                 </div>
 
                             </div>
@@ -1748,9 +2355,11 @@ function renderAssets() {
                                 </div>
 
                                 <div class="stat-value">
-                                    ${formatMoney(
-                                        stat.averageCost
+
+                                    ${formatScaled(
+                                        stat.averageCostScaled
                                     )}
+
                                 </div>
 
                             </div>
@@ -1763,11 +2372,13 @@ function renderAssets() {
                                 </div>
 
                                 <div class="stat-value">
+
                                     ${
                                         asset
                                         .transactions
                                         .length
                                     }
+
                                 </div>
 
                             </div>
@@ -1831,11 +2442,9 @@ function openAssetModal() {
         "assetName"
     ).value = "";
 
-
     document.getElementById(
         "assetNote"
     ).value = "";
-
 
     document.getElementById(
         "assetModal"
@@ -1858,99 +2467,104 @@ function closeAssetModal() {
 
 
 document
-    .getElementById("assetForm")
-    .addEventListener(
-        "submit",
-        function(e) {
+.getElementById("assetForm")
+.addEventListener(
+    "submit",
+    function(e) {
 
-            e.preventDefault();
-
-
-            const name =
-                document.getElementById(
-                    "assetName"
-                ).value.trim();
+        e.preventDefault();
 
 
-            const note =
-                document.getElementById(
-                    "assetNote"
-                ).value.trim();
+        const name =
+            document.getElementById(
+                "assetName"
+            ).value.trim();
 
 
-            if (!name) {
-
-                showToast(
-                    "请输入资产名称"
-                );
-
-                return;
-
-            }
+        const note =
+            document.getElementById(
+                "assetNote"
+            ).value.trim();
 
 
-            const exists =
-                db.assets.some(
-                    asset =>
-                        asset.name
-                            .toLowerCase() ===
-                        name.toLowerCase()
-                );
-
-
-            if (exists) {
-
-                showToast(
-                    "该资产已经存在"
-                );
-
-                return;
-
-            }
-
-
-            db.assets.push({
-
-                id: generateId(),
-
-                name,
-
-                note,
-
-                createdAt:
-                    new Date()
-                        .toISOString(),
-
-                transactions: []
-
-            });
-
-
-            saveData();
-
-            renderAssets();
-
-            renderChartPage();
-
-            closeAssetModal();
+        if (!name) {
 
             showToast(
-                "资产创建成功"
+                "请输入资产名称"
             );
 
+            return;
+
         }
-    );
+
+
+        const exists =
+            db.assets.some(
+                asset =>
+                    asset.name
+                        .toLowerCase() ===
+                    name.toLowerCase()
+            );
+
+
+        if (exists) {
+
+            showToast(
+                "该资产已经存在"
+            );
+
+            return;
+
+        }
+
+
+        db.assets.push({
+
+            id:
+                generateId(),
+
+            name,
+
+            note,
+
+            createdAt:
+                new Date()
+                .toISOString(),
+
+            transactions: []
+
+        });
+
+
+        saveData();
+
+        renderAssets();
+
+        renderChartPage();
+
+        closeAssetModal();
+
+        showToast(
+            "资产创建成功"
+        );
+
+    }
+);
 
 
 /* ============================================================
    删除资产
 ============================================================ */
 
-function deleteAsset(assetId) {
+function deleteAsset(
+    assetId
+) {
 
     const asset =
         db.assets.find(
-            x => x.id === assetId
+            x =>
+                x.id ===
+                assetId
         );
 
 
@@ -1970,7 +2584,9 @@ function deleteAsset(assetId) {
 
     db.assets =
         db.assets.filter(
-            x => x.id !== assetId
+            x =>
+                x.id !==
+                assetId
         );
 
 
@@ -1998,7 +2614,9 @@ function openTransactionModal(
 
     const asset =
         db.assets.find(
-            x => x.id === assetId
+            x =>
+                x.id ===
+                assetId
         );
 
 
@@ -2007,7 +2625,8 @@ function openTransactionModal(
 
     document.getElementById(
         "transactionAssetId"
-    ).value = assetId;
+    ).value =
+        assetId;
 
 
     document.getElementById(
@@ -2020,7 +2639,9 @@ function openTransactionModal(
 
         const tx =
             asset.transactions.find(
-                x => x.id === transactionId
+                x =>
+                    x.id ===
+                    transactionId
             );
 
 
@@ -2048,13 +2669,17 @@ function openTransactionModal(
         document.getElementById(
             "transactionAmount"
         ).value =
-            tx.amount;
+            formatScaled(
+                getAmountScaled(tx)
+            );
 
 
         document.getElementById(
             "transactionQuantity"
         ).value =
-            tx.quantity;
+            formatScaled(
+                getQuantityScaled(tx)
+            );
 
 
         document.getElementById(
@@ -2134,7 +2759,7 @@ function closeTransactionModal() {
 function updateTransactionPreview() {
 
     const amount =
-        Number(
+        decimalToScaled(
             document.getElementById(
                 "transactionAmount"
             ).value
@@ -2142,7 +2767,7 @@ function updateTransactionPreview() {
 
 
     const quantity =
-        Number(
+        decimalToScaled(
             document.getElementById(
                 "transactionQuantity"
             ).value
@@ -2153,13 +2778,28 @@ function updateTransactionPreview() {
 
 
     if (
-        Number.isFinite(amount) &&
-        Number.isFinite(quantity) &&
+        amount > 0 &&
         quantity > 0
     ) {
 
+        /*
+            amount / quantity
+
+            两者都是 SCALE 格式。
+
+            结果也要转成 SCALE：
+
+            amountScaled × SCALE
+            -------------------
+            quantityScaled
+        */
+
         price =
-            amount / quantity;
+            Math.round(
+                amount *
+                SCALE /
+                quantity
+            );
 
     }
 
@@ -2167,7 +2807,9 @@ function updateTransactionPreview() {
     document.getElementById(
         "calculatedPrice"
     ).textContent =
-        formatMoney(price);
+        formatScaled(
+            price
+        );
 
 
     const type =
@@ -2183,16 +2825,14 @@ function updateTransactionPreview() {
 
 
     if (
-        Number.isFinite(amount) &&
-        amount >= 0 &&
-        Number.isFinite(quantity) &&
+        amount > 0 &&
         quantity > 0
     ) {
 
         document.getElementById(
             "transactionSummary"
         ).textContent =
-            `${typeText} ${formatNumber(quantity)} 单位，共 ${formatMoney(amount)}，单价 ${formatMoney(price)}`;
+            `${typeText} ${formatScaled(quantity)} 单位，共 ${formatScaled(amount)}，单价 ${formatScaled(price)}`;
 
     }
 
@@ -2237,237 +2877,233 @@ document.getElementById(
 ============================================================ */
 
 document
-    .getElementById(
-        "transactionForm"
-    )
-    .addEventListener(
-        "submit",
-        function(e) {
+.getElementById("transactionForm")
+.addEventListener(
+    "submit",
+    function(e) {
 
-            e.preventDefault();
+        e.preventDefault();
 
 
-            const assetId =
+        const assetId =
+            document.getElementById(
+                "transactionAssetId"
+            ).value;
+
+
+        const asset =
+            db.assets.find(
+                x =>
+                    x.id ===
+                    assetId
+            );
+
+
+        if (!asset) return;
+
+
+        const type =
+            document.getElementById(
+                "transactionType"
+            ).value;
+
+
+        const date =
+            document.getElementById(
+                "transactionDate"
+            ).value;
+
+
+        const amountScaled =
+            decimalToScaled(
                 document.getElementById(
-                    "transactionAssetId"
-                ).value;
+                    "transactionAmount"
+                ).value
+            );
 
 
-            const asset =
-                db.assets.find(
-                    x => x.id === assetId
-                );
-
-
-            if (!asset) return;
-
-
-            const type =
+        const quantityScaled =
+            decimalToScaled(
                 document.getElementById(
-                    "transactionType"
-                ).value;
+                    "transactionQuantity"
+                ).value
+            );
 
 
-            const date =
-                document.getElementById(
-                    "transactionDate"
-                ).value;
+        const note =
+            document.getElementById(
+                "transactionNote"
+            ).value.trim();
 
 
-            const amount =
-                Number(
-                    document.getElementById(
-                        "transactionAmount"
-                    ).value
-                );
+        const editingId =
+            document.getElementById(
+                "editingTransactionId"
+            ).value;
 
 
-            const quantity =
-                Number(
-                    document.getElementById(
-                        "transactionQuantity"
-                    ).value
-                );
-
-
-            const note =
-                document.getElementById(
-                    "transactionNote"
-                ).value.trim();
-
-
-            const editingId =
-                document.getElementById(
-                    "editingTransactionId"
-                ).value;
-
-
-            if (!date) {
-
-                showToast(
-                    "请选择日期"
-                );
-
-                return;
-
-            }
-
-
-            if (
-                !Number.isFinite(amount) ||
-                amount <= 0
-            ) {
-
-                showToast(
-                    "请输入有效交易金额"
-                );
-
-                return;
-
-            }
-
-
-            if (
-                !Number.isFinite(quantity) ||
-                quantity <= 0
-            ) {
-
-                showToast(
-                    "请输入有效数量"
-                );
-
-                return;
-
-            }
-
-
-            /*
-                编辑时：
-
-                先排除原来的交易，
-                再验证新的交易是否合理。
-            */
-
-            const tempTransactions =
-                asset.transactions.filter(
-                    tx =>
-                        tx.id !== editingId
-                );
-
-
-            const tempAsset = {
-
-                ...asset,
-
-                transactions:
-                    tempTransactions
-
-            };
-
-
-            const current =
-                calculateAsset(
-                    tempAsset
-                );
-
-
-            /*
-                卖出不能超过
-                编辑后的历史持仓。
-            */
-
-            if (
-                type === "sell" &&
-                quantity >
-                    current.quantity +
-                    1e-10
-            ) {
-
-                showToast(
-                    `卖出数量不能超过当前持仓 ${formatNumber(current.quantity)}`
-                );
-
-                return;
-
-            }
-
-
-            const transaction = {
-
-                id:
-                    editingId ||
-                    generateId(),
-
-                type,
-
-                date,
-
-                amount,
-
-                quantity,
-
-                note
-
-            };
-
-
-            if (editingId) {
-
-                const index =
-                    asset.transactions
-                        .findIndex(
-                            tx =>
-                                tx.id ===
-                                editingId
-                        );
-
-
-                if (index >= 0) {
-
-                    asset.transactions[index] =
-                        transaction;
-
-                }
-
-            }
-
-            else {
-
-                asset.transactions.push(
-                    transaction
-                );
-
-            }
-
-
-            saveData();
-
-            renderAssets();
-
-            renderChartPage();
-
-            closeTransactionModal();
-
+        if (!date) {
 
             showToast(
-                editingId
-                    ? "交易已修改"
-                    : "交易已添加"
+                "请选择日期"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            amountScaled <= 0
+        ) {
+
+            showToast(
+                "请输入有效交易金额"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            quantityScaled <= 0
+        ) {
+
+            showToast(
+                "请输入有效数量"
+            );
+
+            return;
+
+        }
+
+
+        /*
+            编辑交易时，
+            先排除原交易，
+            然后重新计算历史持仓。
+        */
+
+        const tempTransactions =
+            asset.transactions.filter(
+                tx =>
+                    tx.id !==
+                    editingId
+            );
+
+
+        const tempAsset = {
+
+            ...asset,
+
+            transactions:
+                tempTransactions
+
+        };
+
+
+        const current =
+            calculateAsset(
+                tempAsset
+            );
+
+
+        if (
+            type === "sell" &&
+            quantityScaled >
+                current.quantityScaled
+        ) {
+
+            showToast(
+                `卖出数量不能超过当前持仓 ${formatScaled(current.quantityScaled)}`
+            );
+
+            return;
+
+        }
+
+
+        const transaction = {
+
+            id:
+                editingId ||
+                generateId(),
+
+            type,
+
+            date,
+
+            amountScaled,
+
+            quantityScaled,
+
+            note
+
+        };
+
+
+        if (editingId) {
+
+            const index =
+                asset.transactions
+                .findIndex(
+                    tx =>
+                        tx.id ===
+                        editingId
+                );
+
+
+            if (index >= 0) {
+
+                asset.transactions[index] =
+                    transaction;
+
+            }
+
+        }
+
+        else {
+
+            asset.transactions.push(
+                transaction
             );
 
         }
-    );
+
+
+        saveData();
+
+        renderAssets();
+
+        renderChartPage();
+
+        closeTransactionModal();
+
+
+        showToast(
+            editingId
+                ? "交易已修改"
+                : "交易已添加"
+        );
+
+    }
+);
 
 
 /* ============================================================
    Asset Detail
 ============================================================ */
 
-function openAssetDetail(assetId) {
+function openAssetDetail(
+    assetId
+) {
 
     const asset =
         db.assets.find(
-            x => x.id === assetId
+            x =>
+                x.id ===
+                assetId
         );
 
 
@@ -2499,7 +3135,9 @@ function closeAssetDetailModal() {
 }
 
 
-function renderAssetDetail(asset) {
+function renderAssetDetail(
+    asset
+) {
 
     const container =
         document.getElementById(
@@ -2519,7 +3157,8 @@ function renderAssetDetail(asset) {
             (a, b) => {
 
                 if (
-                    a.date !== b.date
+                    a.date !==
+                    b.date
                 ) {
 
                     return b.date.localeCompare(
@@ -2556,9 +3195,11 @@ function renderAssetDetail(asset) {
                 </div>
 
                 <div class="summary-value">
-                    ${formatNumber(
-                        stat.quantity
+
+                    ${formatScaled(
+                        stat.quantityScaled
                     )}
+
                 </div>
 
             </div>
@@ -2571,9 +3212,11 @@ function renderAssetDetail(asset) {
                 </div>
 
                 <div class="summary-value">
-                    ${formatMoney(
-                        stat.averageCost
+
+                    ${formatScaled(
+                        stat.averageCostScaled
                     )}
+
                 </div>
 
             </div>
@@ -2586,9 +3229,11 @@ function renderAssetDetail(asset) {
                 </div>
 
                 <div class="summary-value">
-                    ${formatMoney(
-                        stat.totalBuyAmount
+
+                    ${formatScaled(
+                        stat.totalBuyAmountScaled
                     )}
+
                 </div>
 
             </div>
@@ -2601,9 +3246,11 @@ function renderAssetDetail(asset) {
                 </div>
 
                 <div class="summary-value">
-                    ${formatMoney(
-                        stat.totalSellAmount
+
+                    ${formatScaled(
+                        stat.totalSellAmountScaled
                     )}
+
                 </div>
 
             </div>
@@ -2658,13 +3305,25 @@ function renderAssetDetail(asset) {
                 transactions.map(
                     tx => {
 
-                        const price =
-                            Number(
-                                tx.amount
-                            ) /
-                            Number(
-                                tx.quantity
+                        const amountScaled =
+                            getAmountScaled(
+                                tx
                             );
+
+                        const quantityScaled =
+                            getQuantityScaled(
+                                tx
+                            );
+
+
+                        const priceScaled =
+                            quantityScaled > 0
+                                ? Math.round(
+                                    amountScaled *
+                                    SCALE /
+                                    quantityScaled
+                                  )
+                                : 0;
 
 
                         return `
@@ -2697,7 +3356,9 @@ function renderAssetDetail(asset) {
 
                                             <div class="transaction-date">
 
-                                                ${tx.date}
+                                                ${escapeHtml(
+                                                    tx.date
+                                                )}
 
                                             </div>
 
@@ -2705,18 +3366,20 @@ function renderAssetDetail(asset) {
                                             <div class="transaction-detail">
 
                                                 数量：
-                                                ${formatNumber(
-                                                    tx.quantity
+                                                ${formatScaled(
+                                                    quantityScaled
                                                 )}
 
-                                                · 单价：
-                                                ${formatMoney(
-                                                    price
+                                                <br>
+
+                                                单价：
+                                                ${formatScaled(
+                                                    priceScaled
                                                 )}
 
                                                 ${
                                                     tx.note
-                                                    ? " · " +
+                                                    ? "<br>备注：" +
                                                       escapeHtml(
                                                           tx.note
                                                       )
@@ -2734,8 +3397,8 @@ function renderAssetDetail(asset) {
 
                                         <div class="transaction-price">
 
-                                            ${formatMoney(
-                                                tx.amount
+                                            ${formatScaled(
+                                                amountScaled
                                             )}
 
                                         </div>
@@ -2810,7 +3473,9 @@ function deleteTransaction(
 
     const asset =
         db.assets.find(
-            x => x.id === assetId
+            x =>
+                x.id ===
+                assetId
         );
 
 
@@ -2819,7 +3484,9 @@ function deleteTransaction(
 
     const tx =
         asset.transactions.find(
-            x => x.id === transactionId
+            x =>
+                x.id ===
+                transactionId
         );
 
 
@@ -2844,7 +3511,8 @@ function deleteTransaction(
     asset.transactions =
         asset.transactions.filter(
             x =>
-                x.id !== transactionId
+                x.id !==
+                transactionId
         );
 
 
@@ -2898,7 +3566,9 @@ function renderChartPage() {
     if (
         current &&
         db.assets.some(
-            x => x.id === current
+            x =>
+                x.id ===
+                current
         )
     ) {
 
@@ -2934,7 +3604,9 @@ function renderCostChart() {
 
     const asset =
         db.assets.find(
-            x => x.id === select.value
+            x =>
+                x.id ===
+                select.value
         );
 
 
@@ -3065,7 +3737,9 @@ function showMonthPoint(
 
     const asset =
         db.assets.find(
-            x => x.id === select.value
+            x =>
+                x.id ===
+                select.value
         );
 
 
@@ -3080,7 +3754,9 @@ function showMonthPoint(
 
     const point =
         data.find(
-            x => x.month === month
+            x =>
+                x.month ===
+                month
         );
 
 
@@ -3088,14 +3764,14 @@ function showMonthPoint(
 
 
     showToast(
-        `${formatMonth(month)} 平均成本：${formatMoney(point.averageCost)}`
+        `${formatMonth(month)} 平均成本：${formatScaled(point.averageCostScaled)}`
     );
 
 }
 
 
 /* ============================================================
-   Canvas
+   Canvas Chart
 ============================================================ */
 
 function drawChart(
@@ -3108,7 +3784,8 @@ function drawChart(
 
 
     const dpr =
-        window.devicePixelRatio || 1;
+        window.devicePixelRatio ||
+        1;
 
 
     const width =
@@ -3141,7 +3818,7 @@ function drawChart(
 
     const padding = {
 
-        left: 55,
+        left: 85,
 
         right: 18,
 
@@ -3164,10 +3841,18 @@ function drawChart(
         padding.bottom;
 
 
+    /*
+        图表使用 Number 仅用于
+        Canvas 坐标计算。
+
+        数据本身仍然保持
+        9 位定点整数。
+    */
+
     const values =
         data.map(
             x =>
-                x.averageCost
+                x.averageCostScaled
         );
 
 
@@ -3192,9 +3877,11 @@ function drawChart(
         max *= 1.05;
 
 
-        if (min === 0) {
+        if (
+            min === 0
+        ) {
 
-            max = 1;
+            max = SCALE;
 
         }
 
@@ -3207,7 +3894,6 @@ function drawChart(
 
     min -=
         range * 0.12;
-
 
     max +=
         range * 0.12;
@@ -3265,22 +3951,21 @@ function drawChart(
     );
 
 
-    /* 网格 */
+    /*
+        网格
+    */
 
     ctx.font =
         "11px -apple-system, BlinkMacSystemFont, sans-serif";
 
-
     ctx.textAlign =
         "right";
-
 
     ctx.textBaseline =
         "middle";
 
 
-    const gridCount =
-        5;
+    const gridCount = 5;
 
 
     for (
@@ -3337,9 +4022,14 @@ function drawChart(
             "#999";
 
 
+        /*
+            坐标轴仍然显示
+            9 位小数。
+        */
+
         ctx.fillText(
-            formatNumber(
-                value
+            scaledToDecimal(
+                Math.round(value)
             ),
             padding.left - 8,
             y
@@ -3348,7 +4038,9 @@ function drawChart(
     }
 
 
-    /* 折线 */
+    /*
+        折线
+    */
 
     ctx.beginPath();
 
@@ -3364,7 +4056,7 @@ function drawChart(
 
             const y =
                 yPosition(
-                    item.averageCost
+                    item.averageCostScaled
                 );
 
 
@@ -3378,7 +4070,6 @@ function drawChart(
                 );
 
             }
-
             else {
 
                 ctx.lineTo(
@@ -3395,23 +4086,21 @@ function drawChart(
     ctx.strokeStyle =
         "#007aff";
 
-
     ctx.lineWidth =
         2.5;
-
 
     ctx.lineJoin =
         "round";
 
-
     ctx.lineCap =
         "round";
-
 
     ctx.stroke();
 
 
-    /* 数据点 */
+    /*
+        数据点
+    */
 
     data.forEach(
         (item, index) => {
@@ -3424,7 +4113,7 @@ function drawChart(
 
             const y =
                 yPosition(
-                    item.averageCost
+                    item.averageCostScaled
                 );
 
 
@@ -3443,17 +4132,14 @@ function drawChart(
             ctx.fillStyle =
                 "#ffffff";
 
-
             ctx.fill();
 
 
             ctx.strokeStyle =
                 "#007aff";
 
-
             ctx.lineWidth =
                 2;
-
 
             ctx.stroke();
 
@@ -3461,14 +4147,11 @@ function drawChart(
             ctx.fillStyle =
                 "#888";
 
-
             ctx.font =
                 "10px -apple-system, BlinkMacSystemFont, sans-serif";
 
-
             ctx.textAlign =
                 "center";
-
 
             ctx.textBaseline =
                 "top";
@@ -3491,14 +4174,11 @@ function drawChart(
     ctx.fillStyle =
         "#888";
 
-
     ctx.font =
         "11px -apple-system, BlinkMacSystemFont, sans-serif";
 
-
     ctx.textAlign =
         "left";
-
 
     ctx.textBaseline =
         "top";
@@ -3531,76 +4211,76 @@ function formatMonthShort(
 ============================================================ */
 
 document
-    .querySelectorAll(".tab")
-    .forEach(
-        tab => {
+.querySelectorAll(".tab")
+.forEach(
+    tab => {
 
-            tab.addEventListener(
-                "click",
-                () => {
+        tab.addEventListener(
+            "click",
+            () => {
 
-                    document
-                        .querySelectorAll(
-                            ".tab"
-                        )
-                        .forEach(
-                            x =>
-                                x.classList.remove(
-                                    "active"
-                                )
-                        );
-
-
-                    document
-                        .querySelectorAll(
-                            ".page"
-                        )
-                        .forEach(
-                            x =>
-                                x.classList.remove(
-                                    "active"
-                                )
-                        );
-
-
-                    tab.classList.add(
-                        "active"
-                    );
-
-
-                    document
-                        .getElementById(
-                            tab.dataset.page
-                        )
-                        .classList.add(
+                document
+                .querySelectorAll(
+                    ".tab"
+                )
+                .forEach(
+                    x =>
+                        x.classList.remove(
                             "active"
-                        );
+                        )
+                );
 
 
-                    if (
-                        tab.dataset.page ===
-                        "chartPage"
-                    ) {
+                document
+                .querySelectorAll(
+                    ".page"
+                )
+                .forEach(
+                    x =>
+                        x.classList.remove(
+                            "active"
+                        )
+                );
 
-                        renderChartPage();
 
-                    }
+                tab.classList.add(
+                    "active"
+                );
 
 
-                    if (
-                        tab.dataset.page ===
-                        "settingsPage"
-                    ) {
+                document
+                .getElementById(
+                    tab.dataset.page
+                )
+                .classList.add(
+                    "active"
+                );
 
-                        updateDataInfo();
 
-                    }
+                if (
+                    tab.dataset.page ===
+                    "chartPage"
+                ) {
+
+                    renderChartPage();
 
                 }
-            );
 
-        }
-    );
+
+                if (
+                    tab.dataset.page ===
+                    "settingsPage"
+                ) {
+
+                    updateDataInfo();
+
+                }
+
+            }
+        );
+
+    }
+);
 
 
 /* ============================================================
@@ -3611,12 +4291,22 @@ function exportData() {
 
     const exportObject = {
 
-        version: 2,
+        version: 3,
+
+        precision:
+            9,
+
+        scale:
+            SCALE,
+
+        description:
+            "All monetary values and quantities are stored as integers scaled by 1e9.",
 
         exportedAt:
             new Date().toISOString(),
 
-        data: db
+        data:
+            db
 
     };
 
@@ -3720,8 +4410,8 @@ function importData(
                     imported.data &&
                     Array.isArray(
                         imported
-                            .data
-                            .assets
+                        .data
+                        .assets
                     )
                 ) {
 
@@ -3752,15 +4442,7 @@ function importData(
 
 
                 /*
-                    兼容旧版本数据：
-
-                    旧版本使用：
-
-                    amount = price × quantity
-
-                    因此如果导入旧数据，
-                    自动把 price × quantity
-                    转换成 amount。
+                    统一转换成 v3。
                 */
 
                 newData.assets =
@@ -3779,21 +4461,15 @@ function importData(
                                 transactions.map(
                                     tx => {
 
+                                        /*
+                                            已经是 v3
+                                        */
+
                                         if (
-                                            tx.amount !==
+                                            tx.amountScaled !==
+                                            undefined &&
+                                            tx.quantityScaled !==
                                             undefined
-                                        ) {
-
-                                            return tx;
-
-                                        }
-
-
-                                        if (
-                                            tx.price !==
-                                                undefined &&
-                                            tx.quantity !==
-                                                undefined
                                         ) {
 
                                             return {
@@ -3808,16 +4484,58 @@ function importData(
                                                 date:
                                                     tx.date,
 
-                                                amount:
+                                                amountScaled:
                                                     Number(
-                                                        tx.price
-                                                    ) *
-                                                    Number(
-                                                        tx.quantity
+                                                        tx.amountScaled
                                                     ),
 
-                                                quantity:
+                                                quantityScaled:
                                                     Number(
+                                                        tx.quantityScaled
+                                                    ),
+
+                                                note:
+                                                    tx.note ||
+                                                    ""
+
+                                            };
+
+                                        }
+
+
+                                        /*
+                                            v2：
+
+                                            amount
+                                            quantity
+                                        */
+
+                                        if (
+                                            tx.amount !==
+                                            undefined &&
+                                            tx.quantity !==
+                                            undefined
+                                        ) {
+
+                                            return {
+
+                                                id:
+                                                    tx.id ||
+                                                    generateId(),
+
+                                                type:
+                                                    tx.type,
+
+                                                date:
+                                                    tx.date,
+
+                                                amountScaled:
+                                                    decimalToScaled(
+                                                        tx.amount
+                                                    ),
+
+                                                quantityScaled:
+                                                    decimalToScaled(
                                                         tx.quantity
                                                     ),
 
@@ -3830,9 +4548,71 @@ function importData(
                                         }
 
 
-                                        return tx;
+                                        /*
+                                            v1：
+
+                                            price
+                                            quantity
+                                        */
+
+                                        if (
+                                            tx.price !==
+                                            undefined &&
+                                            tx.quantity !==
+                                            undefined
+                                        ) {
+
+                                            const quantityScaled =
+                                                decimalToScaled(
+                                                    tx.quantity
+                                                );
+
+
+                                            const priceScaled =
+                                                decimalToScaled(
+                                                    tx.price
+                                                );
+
+
+                                            const amountScaled =
+                                                Math.round(
+                                                    priceScaled *
+                                                    quantityScaled /
+                                                    SCALE
+                                                );
+
+
+                                            return {
+
+                                                id:
+                                                    tx.id ||
+                                                    generateId(),
+
+                                                type:
+                                                    tx.type,
+
+                                                date:
+                                                    tx.date,
+
+                                                amountScaled,
+
+                                                quantityScaled,
+
+                                                note:
+                                                    tx.note ||
+                                                    ""
+
+                                            };
+
+                                        }
+
+
+                                        return null;
 
                                     }
+                                )
+                                .filter(
+                                    Boolean
                                 );
 
 
@@ -3853,7 +4633,7 @@ function importData(
                                 createdAt:
                                     asset.createdAt ||
                                     new Date()
-                                        .toISOString(),
+                                    .toISOString(),
 
                                 transactions:
                                     converted
@@ -3878,8 +4658,14 @@ function importData(
                 }
 
 
-                db =
-                    newData;
+                db = {
+
+                    version: 3,
+
+                    assets:
+                        newData.assets
+
+                };
 
 
                 saveData();
@@ -3925,7 +4711,7 @@ function importData(
 
 
 /* ============================================================
-   清空
+   删除全部
 ============================================================ */
 
 function clearAllData() {
@@ -3953,6 +4739,8 @@ function clearAllData() {
 
 
     db = {
+
+        version: 3,
 
         assets: []
 
@@ -4003,8 +4791,7 @@ function updateDataInfo() {
         );
 
 
-    let storageSize =
-        0;
+    let storageSize = 0;
 
 
     try {
@@ -4015,7 +4802,6 @@ function updateDataInfo() {
             ]).size;
 
     }
-
     catch(e) {}
 
 
@@ -4031,6 +4817,13 @@ function updateDataInfo() {
             ${transactionCount}
         </strong>
         条交易记录。
+
+        <br>
+
+        数据精度：
+        <strong>
+            9 位小数
+        </strong>
 
         <br>
 
@@ -4082,69 +4875,34 @@ function formatBytes(
 
 
 /* ============================================================
-   HTML 安全
-============================================================ */
-
-function escapeHtml(
-    value
-) {
-
-    return String(value)
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-/* ============================================================
    Modal
 ============================================================ */
 
 document
-    .querySelectorAll(
-        ".modal"
-    )
-    .forEach(
-        modal => {
+.querySelectorAll(".modal")
+.forEach(
+    modal => {
 
-            modal.addEventListener(
-                "click",
-                function(e) {
+        modal.addEventListener(
+            "click",
+            function(e) {
 
-                    if (
-                        e.target ===
-                        modal
-                    ) {
+                if (
+                    e.target ===
+                    modal
+                ) {
 
-                        modal.classList.remove(
-                            "show"
-                        );
-
-                    }
+                    modal.classList.remove(
+                        "show"
+                    );
 
                 }
-            );
 
-        }
-    );
+            }
+        );
+
+    }
+);
 
 
 document.addEventListener(
@@ -4157,15 +4915,15 @@ document.addEventListener(
         ) {
 
             document
-                .querySelectorAll(
-                    ".modal"
-                )
-                .forEach(
-                    modal =>
-                        modal.classList.remove(
-                            "show"
-                        )
-                );
+            .querySelectorAll(
+                ".modal"
+            )
+            .forEach(
+                modal =>
+                    modal.classList.remove(
+                        "show"
+                    )
+            );
 
         }
 
